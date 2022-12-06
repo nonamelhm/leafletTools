@@ -1,9 +1,18 @@
 import 'leaflet/dist/leaflet.css'
+
+
 import L from 'leaflet'
+// 画线框架
+import '@/assets/css/Leaflet.PolylineMeasure.css'
+import 'leaflet.pm';
+import 'leaflet.pm/dist/leaflet.pm.css';
+import '@/assets/js/Leaflet.PolylineMeasure.js'
+
 import "leaflet.fullscreen/Control.FullScreen.css"
 import "leaflet.fullscreen"
 import "leaflet.markercluster/dist/MarkerCluster.css"
 import "leaflet.markercluster"
+import 'leaflet-semicircle'// 半圆
 import "../assets/less/leaflet/leaflet.less" //引入聚合点样式
 
 let baseLayers = [] //基本图层
@@ -26,37 +35,47 @@ baseLayers['#Empty'].name = '空白'
 baseLayers['#street'].name = '街道'
 baseLayers['#satellite'].name = '卫星'
 baseLayers['#terrain'].name = '地形'
-const mapFunc=['polyline','polygon','circle','rectangle']
+const tempSetting = {
+  空白: baseLayers['#Empty'].tiles,
+  卫星: baseLayers['#satellite'].tiles,
+  地形: baseLayers['#terrain'].tiles,
+  街道: baseLayers['#street'].tiles
+}
 export default {
   map: null,
   markerGroup: null,
   pointList: {},
-  polylineList: {},
+  drawList: {},
   polygon: null,
+  polylineMeasure: false,
   mapControl: {},
-  initLeaflet: function (eleId) {
-    let lat = 23.15385551286836
-    let lon = 113.03091108798982
-    let zoom = 4
-    let reMap
+  drawLatlng:{},
+  initLeaflet: function (eleId, options = { lat: 23.1538555, lon: 113.030911, zoom: 4, maxZoom: 18, minZoom: 3 }) {
     let tempSortKey = ['#Empty', '#satellite', '#terrain', '#street'] //存储名称以便切换图层
     let defalutLabelIndex = parseInt(sessionStorage.getItem('layerIndex'))
     if (isNaN(defalutLabelIndex)) {
       defalutLabelIndex = 3
     }
     this.map = null
+    let reMap
+    let lat = options.lat ? options.lat : 23.1538555;
+    let lon = options.lon ? options.lon : 113.030911;
+    let zoom = options.zoom ? options.zoom : 4;
+    let maxZoom = options.maxZoom ? options.maxZoom : 18;
+    let minZoom = options.minZoom ? options.minZoom : 3;
     reMap = L.map(eleId, {
-      center: [lat, lon], zoom: zoom, maxZoom: 18, minZoom: 3, layers: [baseLayers[tempSortKey[defalutLabelIndex]].tiles], // 默认地图
-      preferCanvas: true, attributionControl: false, zoomControl: false, fullscreenControl: false
-    }).setView([lat, lon], zoom)
+      center: [lat, lon],
+      zoom,
+      maxZoom,
+      minZoom,
+      layers: [baseLayers[tempSortKey[defalutLabelIndex]].tiles], // 默认地图
+      preferCanvas: true,
+      attributionControl: false,
+      zoomControl: false,
+      fullscreenControl: false
+    }).setView([options.lat, lon], zoom)
     reMap._controlCorners.topright.style.position = 'absolute'
     reMap._controlCorners.topright.style.left = '120%'
-    var tempSetting = {
-      空白: baseLayers['#Empty'].tiles,
-      卫星: baseLayers['#satellite'].tiles,
-      地形: baseLayers['#terrain'].tiles,
-      街道: baseLayers['#street'].tiles
-    }
     this.mapControl.layers = L.control.layers(tempSetting)
     this.mapControl.layers.addTo(reMap).setPosition('topright')
     this.mapControl.zomm = L.control.zoom()
@@ -74,7 +93,7 @@ export default {
   fitPoint(pointData) {
     this.map.setView(pointData, 16);
   },
-  renderPoint(list, layersName = 'layers1', iconUrl = require("@/assets/images/leaflet_icon/marker-icon.png"), clusterFlag = false) {
+  renderPoint(list, layersName = 'layers1', iconUrl = require("@/assets/images/leaflet_icon/marker-icon.png"), clusterFlag = false,fn) {
     if (clusterFlag) {
       this.mapControl[layersName] = L.markerClusterGroup({
         spiderfyOnMaxZoom: false, showCoverageOnHover: false, zoomToBoundsOnClick: true, disableClusteringAtZoom: 16, maxClusterRadius: 60, iconCreateFunction: function (cluster) {
@@ -93,13 +112,8 @@ export default {
       })
       for (var p of list) {
         this.pointList[p.id] = L.marker(L.latLng(p.lat, p.lon), { icon: icon, info: p }).on('click', function (e) {
-          console.log('点击的marker的信息:')
-          console.log(e.target.options.info)
-
+          fn?fn(e):''
         }) //以id为属性作为点的区别
-
-        // 点击点出现的信息
-        this.pointList[p.id].bindPopup('纬度' + p.lat).openPopup();
         this.mapControl[layersName].addLayer(this.pointList[p.id])
       }
       this.map.addLayer(this.mapControl[layersName]);
@@ -116,37 +130,74 @@ export default {
       img.src = require(`${url}`) // 解决依赖代码不支持变量，需要转模板模式
     })
   },
-  drawPolyline(list, layersName='polylineLayers', type,options={color:'#fc4a14',weight:2}) { //画线
-    if(this.mapControl[layersName]){
+  drawDataInMap(list, layersName = 'defaultLayers', type, options = { color: '#fc4a14', weight: 2 }) { //画线
+    if (this.mapControl[layersName]) {
       this.mapControl[layersName].clearLayers()
-    }else{
+    } else {
       this.mapControl[layersName] = L.layerGroup()
     }
     let latlngs = []
-    for (var p of list) {
-      latlngs.push([p.lat, p.lon])
+    //绘制台风需要 L.semiCircle radius需要*1000 
+    let radius = 0
+    if (!type.includes('ircle')) {
+      for (var p of list) {
+        latlngs.push([p.lat, p.lon])
+      }
+    } else if (type === 'circle') {
+      latlngs.push(list.lat, list.lon)
+      options.radius = list.radius
+    } else if (type === 'semiCircle') {
+      latlngs.push(list.lat, list.lon)
+      options.radius = list.radius * 1000
     }
-    let rst = mapFunc.some((item)=>item===type)
-    console.log(rst,999)
-
-    
-    let polylineList = L.polyline(latlngs, options)  //挂载线路路线  
-    this.mapControl[layersName].addLayer(polylineList )
+    switch (type) {
+      case 'polyline': this.drawList = L.polyline(latlngs, options); break;
+      case 'polygon': this.drawList = L.polygon(latlngs, options); break;
+      case 'rectangle': this.drawList = L.rectangle(latlngs, options); break;
+      case 'circle': this.drawList = L.circle(latlngs, options); break;
+      case 'semiCircle': this.drawList = L.semiCircle(latlngs, options); break;
+    }
+    this.mapControl[layersName].addLayer(this.drawList);
     this.map.addLayer(this.mapControl[layersName]);
   },
-  drawPolygon(list, layersName='polylineLayers', options={color:'#fc4a14',weight:2}) { //画线
-    if(this.mapControl[layersName]){
-      this.mapControl[layersName].clearLayers()
-    }else{
-      this.mapControl[layersName] = L.layerGroup()
+  drawInMap(type, options = { iconSie: [15, 15], iconUrl: 'https://oss.irim.online/eim/icon/boat/positionMark.png' }) { //绘制在地图上
+    switch (type) {
+      case 'marker':
+        let iconSize = options && options.iconSize ? options.iconSize : [15, 15]
+        let iconUrl = options && options.iconUrl ? options.iconUrl : 'https://oss.irim.online/eim/icon/boat/positionMark.png'
+        let myIcon = L.icon({
+          iconUrl: iconUrl,
+          iconSize: iconSize,
+          iconAnchor: [iconSize[0] / 2, iconSize[1] / 2]
+        })
+        this.map.pm.enableDraw('Marker', { tooltips: false, markerStyle: { icon: myIcon } }); 
+        break;
+        case '':
     }
-    let latlngs = []
-    for (var p of list) {
-      latlngs.push([p.lat, p.lon])
-    }
-    let polygonList = L.polygon(latlngs, options)  //挂载线路路线  
-    this.mapControl[layersName].addLayer(polygonList  )
-    this.map.addLayer(this.mapControl[layersName]);
   },
-  
+  measure() {
+    if (!this.polylineMeasure) {
+      this.polylineMeasure = true
+      L.control.polylineMeasure({
+        position: 'topleft',
+        unit: 'kilometres', //最小单位
+        showBearings: true,
+        clearMeasurementsOnStop: false,
+        showClearControl: true,
+        showUnitControl: true,
+        bearingTextIn: '起点',
+        bearingTextOut: '终点',
+        tooltipTextFinish: '单击并<b>拖动到移动点</b><br>',
+        tooltipTextDelete: '<b>按shift键，然后单击删除</b>',
+        unitControlLabel: {
+          metres: '米',
+          kilometres: '千米',
+          feet: '英尺',
+          landmiles: '英里',
+          nauticalmiles: '海里'
+        },
+      }).addTo(this.map)
+    }
+    document.getElementById(`polyline-measure-control`).click()
+  }
 }

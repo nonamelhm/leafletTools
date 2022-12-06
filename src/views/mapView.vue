@@ -14,7 +14,7 @@ export default {
     funcBox
   },
   mounted() {
-    leaf.initLeaflet("map")
+    leaf.initLeaflet("map",{lat:24,lon:110,zoom:5})
   },
 }
 </script>
