@@ -7,6 +7,9 @@ import '@/assets/css/Leaflet.PolylineMeasure.css'
 import 'leaflet.pm';
 import 'leaflet.pm/dist/leaflet.pm.css';
 import '@/assets/js/Leaflet.PolylineMeasure.js'
+// 测面积
+import 'leaflet-measure/dist/leaflet-measure.css'
+import 'leaflet-measure/dist/leaflet-measure.cn'
 
 import "leaflet.fullscreen/Control.FullScreen.css"
 import "leaflet.fullscreen"
@@ -49,7 +52,7 @@ export default {
   polygon: null,
   polylineMeasure: false,
   mapControl: {},
-  drawLatlng:{},
+  drawLatlng: {},
   initLeaflet: function (eleId, options = { lat: 23.1538555, lon: 113.030911, zoom: 4, maxZoom: 18, minZoom: 3 }) {
     let tempSortKey = ['#Empty', '#satellite', '#terrain', '#street'] //存储名称以便切换图层
     let defalutLabelIndex = parseInt(sessionStorage.getItem('layerIndex'))
@@ -72,7 +75,9 @@ export default {
       preferCanvas: true,
       attributionControl: false,
       zoomControl: false,
-      fullscreenControl: false
+      fullscreenControl: false,
+      measureControl: true,
+      zoomControl: true
     }).setView([options.lat, lon], zoom)
     reMap._controlCorners.topright.style.position = 'absolute'
     reMap._controlCorners.topright.style.left = '120%'
@@ -93,7 +98,7 @@ export default {
   fitPoint(pointData) {
     this.map.setView(pointData, 16);
   },
-  renderPoint(list, layersName = 'layers1', iconUrl = require("@/assets/images/leaflet_icon/marker-icon.png"), clusterFlag = false,fn) {
+  renderPoint(list, layersName = 'layers1', iconUrl = require("@/assets/images/leaflet_icon/marker-icon.png"), clusterFlag = false, fn) {
     if (clusterFlag) {
       this.mapControl[layersName] = L.markerClusterGroup({
         spiderfyOnMaxZoom: false, showCoverageOnHover: false, zoomToBoundsOnClick: true, disableClusteringAtZoom: 16, maxClusterRadius: 60, iconCreateFunction: function (cluster) {
@@ -112,7 +117,7 @@ export default {
       })
       for (var p of list) {
         this.pointList[p.id] = L.marker(L.latLng(p.lat, p.lon), { icon: icon, info: p }).on('click', function (e) {
-          fn?fn(e):''
+          fn ? fn(e) : ''
         }) //以id为属性作为点的区别
         this.mapControl[layersName].addLayer(this.pointList[p.id])
       }
@@ -170,9 +175,9 @@ export default {
           iconSize: iconSize,
           iconAnchor: [iconSize[0] / 2, iconSize[1] / 2]
         })
-        this.map.pm.enableDraw('Marker', { tooltips: false, markerStyle: { icon: myIcon } }); 
+        this.map.pm.enableDraw('Marker', { tooltips: false, markerStyle: { icon: myIcon } });
         break;
-        case '':
+      case '':
     }
   },
   measure() {
@@ -199,5 +204,11 @@ export default {
       }).addTo(this.map)
     }
     document.getElementById(`polyline-measure-control`).click()
+  },
+  mearsureArea() {
+    if (!this.polylineMeasure) {
+      this.polylineMeasure = true
+      document.querySelector(".js-start").click();
+    }
   }
 }

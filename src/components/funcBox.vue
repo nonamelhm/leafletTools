@@ -8,6 +8,7 @@
       <li @click="circle()">{{ isCircle ? '清除圆形' : '数据绘圆形' }}</li>
       <li @click="angleCircle()">{{ isAngleCircle ? '清除角度画圆（台风风圈）' : '绘制角度画圆（台风风圈）' }}</li>
       <li @click="mearsure()">{{ isMeasure ? '取消测量' : '测量距离' }}</li>
+      <li @click="area()">{{ isArea ? '取消测量' : '测量面积' }}</li>
       <li @click="draw('marker')">{{ isDrawing ? '取消地图绘点' : '地图绘点' }}</li>
       <li @click="hotMap()">热力图</li>
       <li @click="changeLayers(1)">切换卫星图</li>
@@ -32,6 +33,7 @@ export default {
       isCircle: false,
       isAngleCircle: false,
       isMeasure:false,
+      isArea:false,
       isDrawing:false
     }
   },
@@ -138,10 +140,14 @@ export default {
     },
     mearsure(){
       this.isMeasure = !this.isMeasure;
-      leaf.measure()
+      leaf.measure();
+    },
+    area(){
+      this.isArea = !this.isArea;
+      leaf.mearsureArea();
     },
     changeLayers(idx){
-     leaf.mapControl.layers._layerControlInputs[idx].click()
+     leaf.mapControl.layers._layerControlInputs[idx].click();
     },
     draw(type){
       leaf.drawInMap(type,{iconUrl:require("@/assets/images/leaflet/marker-icon.png"),iconSize:[10,10]})
