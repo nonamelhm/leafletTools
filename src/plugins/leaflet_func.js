@@ -1,6 +1,4 @@
 import 'leaflet/dist/leaflet.css'
-
-
 import L from 'leaflet'
 // 画线框架
 import '@/assets/css/Leaflet.PolylineMeasure.css'
@@ -76,9 +74,8 @@ export default {
       attributionControl: false,
       zoomControl: false,
       fullscreenControl: false,
-      measureControl: true,
-      zoomControl: true
-    }).setView([options.lat, lon], zoom)
+      measureControl: true
+    })
     reMap._controlCorners.topright.style.position = 'absolute'
     reMap._controlCorners.topright.style.left = '120%'
     this.mapControl.layers = L.control.layers(tempSetting)
@@ -89,16 +86,19 @@ export default {
     this.mapControl.fullscreen.addTo(reMap).setPosition('topright')
     this.map = reMap
   },
+  changeLayers(){
+
+  },
   fitBounds: function (areaData) {
-    let corner1 = L.latLng(areaData[0])
-    let corner2 = L.latLng(areaData[1])
-    let bounds = L.latLngBounds([corner1, corner2])
-    this.map.fitBounds(bounds)
+    // let corner1 = L.latLng(areaData[0])
+    // let corner2 = L.latLng(areaData[1])
+    // let bounds = L.latLngBounds([corner1, corner2])
+    this.map.fitBounds(areaData)
   },
   fitPoint(pointData) {
     this.map.setView(pointData, 16);
   },
-  renderPoint(list, layersName = 'layers1', iconUrl = require("@/assets/images/leaflet_icon/marker-icon.png"), clusterFlag = false, fn) {
+  renderPoint(list, layersName = 'layers1', iconUrl = require("@/assets/images/leaflet_icon/marker-icon.png"), clusterFlag = false) {
     if (clusterFlag) {
       this.mapControl[layersName] = L.markerClusterGroup({
         spiderfyOnMaxZoom: false, showCoverageOnHover: false, zoomToBoundsOnClick: true, disableClusteringAtZoom: 16, maxClusterRadius: 60, iconCreateFunction: function (cluster) {

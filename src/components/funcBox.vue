@@ -21,7 +21,8 @@
   </div>
 </template>
 <script>
-import leaf from '@/plugins/leaflet_func'
+// import leaf from '@/plugins/leaflet_func'
+import leaf from 'leaflettools'
 export default {
   name: 'funcBox',
   data() {
@@ -42,13 +43,12 @@ export default {
       this.isPoint = !this.isPoint
       if (this.isPoint) {
         let fn = function(e){
-          console.log(e,'***')
         }
         let list = [{ lat: 24, lon: 110, id: 1 }, { lat: 22, lon: 110, id: 3 }]
          leaf.renderPoint(list, 'layers1', require("@/assets/images/leaflet_icon/marker-icon-2x.png"), true,fn)
         leaf.renderPoint([{ lat: 25, lon: 110, id: 2 }], 'layers2')
         leaf.renderPoint([{ lat: 26, lon: 110, id: 2 }], 'layers2')
-        // leaf.mapControl['layers1'].bindPopup('Hello').openPopup()
+        leaf.mapControl['layers1'].bindPopup('Hello').openPopup()
         leaf.mapControl['layers2'].bindPopup('Hello').openPopup()
       } else {
         leaf.clearLayer('layers1')
