@@ -9,13 +9,25 @@
   },
   "dependencies": {
     "core-js": "^3.8.3",
-    "vue": "^2.6.14"
+    "leaflet": "^1.7.1",
+    "leaflet-measure": "^3.1.0",
+    "leaflet-semicircle": "^2.0.4",
+    "leaflet.fullscreen": "^2.4.0",
+    "leaflet.markercluster": "^1.5.3",
+    "leaflet.pm": "^2.2.0",
+    "leaflettools": "^1.0.0",
+    "less": "^4.1.3",
+    "less-loader": "^5.0.0",
+    "vue": "^2.6.14",
+    "vue-router": "^3.5.1"
   },
   "devDependencies": {
     "@babel/core": "^7.12.16",
     "@babel/eslint-parser": "^7.12.16",
     "@vue/cli-plugin-babel": "~5.0.0",
     "@vue/cli-plugin-eslint": "~5.0.0",
+    "@vue/cli-plugin-router": "~5.0.0",
+    "@vue/cli-plugin-vuex": "~5.0.0",
     "@vue/cli-service": "~5.0.0",
     "eslint": "^7.32.0",
     "eslint-plugin-vue": "^8.0.3",
