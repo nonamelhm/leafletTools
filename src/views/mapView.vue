@@ -6,8 +6,8 @@
   </div>
 </template>
 <script>
-// import leaf from '@/plugins/leaflet_func.js'
-import leaf from 'leaflettools'
+import leaf from '@/plugins/leaflet_func.js'
+// import leaf from 'leaflettools'
 import funcBox from '@/components/funcBox.vue'
 export default {
   name:'mapView',

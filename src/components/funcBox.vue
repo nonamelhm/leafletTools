@@ -3,7 +3,7 @@
     <ul>
       <li @click="point()">{{ isPoint ? '清除绘点(聚合点)' : '数据绘点(聚合点)' }}</li>
       <li @click="polyline()">{{ isPolyline ? '清除绘线' : '数据绘线' }}</li>
-      <li @click="polygon()">{{ isPolyline ? '清除多边形' : '数据绘多边形' }}</li>
+      <li @click="polygon()">{{ isPolygon? '清除多边形' : '数据绘多边形' }}</li>
       <li @click="rectangle()">{{ isRectangle ? '清除矩形' : '数据绘矩形' }}</li>
       <li @click="circle()">{{ isCircle ? '清除圆形' : '数据绘圆形' }}</li>
       <li @click="angleCircle()">{{ isAngleCircle ? '清除角度画圆（台风风圈）' : '绘制角度画圆（台风风圈）' }}</li>
@@ -11,22 +11,30 @@
       <li @click="area()">{{ isArea ? '取消测量' : '测量面积' }}</li>
       <li @click="draw('marker')">{{ isDrawing ? '取消地图绘点' : '地图绘点' }}</li>
       <li @click="hotMap()">热力图</li>
-      <li @click="changeLayers(1)">切换卫星图</li>
-      <li @click="changeLayers(2)">切换地形图</li>
-      <li @click="changeLayers(3)">切换街道图</li>
+      <li @click="changeLayers(1)">切换天地图卫星图</li>
+      <li @click="changeLayers(2)">切换天地图地形图</li>
+      <li @click="changeLayers(3)">切换天地图街道图</li>
+      <li @click="changeLayers(4)">切换谷歌卫星图</li>
+      <li @click="changeLayers(5)">切换谷歌地形图</li>
+      <li @click="changeLayers(6)">切换谷歌街道图</li>
       <li @click="fullScreen()">全屏</li>
       <li @click="actMapZoomIO(1)">放大</li>
       <li @click="actMapZoomIO(-1)">缩小</li>
+      <li @click="edit(0)">绘制多边形</li>
+      <li @click="edit(1)">绘制圆形</li>
+      <li @click="edit(2)">绘制矩形</li>
+      <li @click="editMarker()">{{ isEditMarker ? '清除绘点' : '直接绘点' }}</li>
     </ul>
   </div>
 </template>
 <script>
-// import leaf from '@/plugins/leaflet_func'
-import leaf from 'leaflettools'
+import leaf from '@/plugins/leaflet_func'
+// import leaf from 'leaflettools'
 export default {
   name: 'funcBox',
   data() {
     return {
+      isEditMarker:false,
       isPoint: false,
       isPolyline: false,
       isPolygon: false,
@@ -147,15 +155,39 @@ export default {
       leaf.mearsureArea();
     },
     changeLayers(idx){
-     leaf.mapControl.layers._layerControlInputs[idx].click();
+     leaf.changeLayers(idx);
     },
     draw(type){
-      leaf.drawInMap(type,{iconUrl:require("@/assets/images/leaflet/marker-icon.png"),iconSize:[10,10]})
+      leaf.drawInMap(type,{iconUrl:require("@/assets/images/leaflet_icon/marker-icon.png"),iconSize:[10,10]})
       leaf.map.on('pm:create', function (e) { //监听绘制
       if(e.shape==='Marker'){
        console.log(e.marker._latlng)
       }
     })
+    },
+    hotMap(){
+      let data = [{
+        lat:35.460756,
+        lng:119.59847,
+        count:1
+      },{
+        lat:35.560756,
+        lng:119.69847,
+        count:19
+      }]
+      leaf.drawHeatMap(data);
+    },
+    edit(type){
+      leaf.editMapGetData(type);
+    },
+    editMarker(){
+      this.isEditMarker = !this.isEditMarker;
+      if(this.isEditMarker){
+        leaf.editMarker();
+      }else{//  清除Maker
+        
+      }
+     
     }
   },
 

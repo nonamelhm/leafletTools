@@ -1,7 +1,7 @@
 {
   "name": "leafletmap",
   "version": "1.0.0",
-  "private": false,
+  "private": true,
   "description": "帮助解决基本的leaflet使用问题",
   "main": "./src/plugins/leaflet_func.js",
   "scripts": {

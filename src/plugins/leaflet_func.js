@@ -1,47 +1,57 @@
-import 'leaflet/dist/leaflet.css'
-import L from 'leaflet'
-// 画线框架
-import '@/assets/css/Leaflet.PolylineMeasure.css'
+import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
+import '@/assets/css/Leaflet.PolylineMeasure.css'// 画线框架
 import 'leaflet.pm';
 import 'leaflet.pm/dist/leaflet.pm.css';
-import '@/assets/js/Leaflet.PolylineMeasure.js'
-// 测面积
-import 'leaflet-measure/dist/leaflet-measure.css'
-import 'leaflet-measure/dist/leaflet-measure.cn'
-
-import "leaflet.fullscreen/Control.FullScreen.css"
-import "leaflet.fullscreen"
-import "leaflet.markercluster/dist/MarkerCluster.css"
-import "leaflet.markercluster"
-import 'leaflet-semicircle'// 半圆
-import "../assets/less/leaflet/leaflet.less" //引入聚合点样式
-
-let baseLayers = [] //基本图层
-baseLayers['#Empty'] = {}
-baseLayers['#street'] = {} // 街道
-baseLayers['#satellite'] = {} // 卫星
-baseLayers['#terrain'] = {} // 地形
+import '@/assets/js/Leaflet.PolylineMeasure.js';
+import 'leaflet-measure/dist/leaflet-measure.css';// 测面积
+import 'leaflet-measure/dist/leaflet-measure.cn';
+import "leaflet.fullscreen/Control.FullScreen.css";
+import "leaflet.fullscreen";
+import "leaflet.markercluster/dist/MarkerCluster.css";
+import "leaflet.markercluster";
+import 'leaflet-semicircle';// 半圆
+import "../assets/less/leaflet/leaflet.less"; //引入聚合点样式
+import "@/assets/js/leaflet-heatmap.js"; //引入热力图
+//start---设置基本图层:空白+天地图+谷歌
+let baseLayers = {
+  '#Empty': { name: '空白' },
+  '#tiandituStreet': { name: '天地图街道' },
+  '#tiandituSatellite': { name: '天地图卫星' },
+  '#tiandituTerrain': { name: '天地图地形' },
+  '#googleStreet': { name: '谷歌街道' },
+  '#googleSatellite': { name: '谷歌卫星' },
+  '#googleTerrain': { name: "谷歌地形" }
+};
 // 随机取[3,7]之间整数
-let nodeRandom = Math.floor(Math.random() * 5) + 3
+let nodeRandom = Math.floor(Math.random() * 5) + 3;
 // t4很容易出问题
-nodeRandom === 4 && (nodeRandom = 6)
-// 街道
-baseLayers['#street'].tiles = L.layerGroup([L.tileLayer(`http://t${nodeRandom}.tianditu.gov.cn/DataServer?T=vec_w&x={x}&y={y}&l={z}&tk=5bb740ffd3a80fb3963e022454eca6e2`), L.tileLayer(`http://t${nodeRandom}.tianditu.gov.cn/DataServer?T=cva_w&x={x}&y={y}&l={z}&tk=5bb740ffd3a80fb3963e022454eca6e2`)])
-// 卫星
-baseLayers['#satellite'].tiles = L.layerGroup([L.tileLayer(`http://t${nodeRandom}.tianditu.gov.cn/DataServer?T=img_w&x={x}&y={y}&l={z}&tk=5bb740ffd3a80fb3963e022454eca6e2`), L.tileLayer(`http://t${nodeRandom}.tianditu.gov.cn/DataServer?T=cia_w&x={x}&y={y}&l={z}&tk=5bb740ffd3a80fb3963e022454eca6e2`)])
-// 地形
-baseLayers['#terrain'].tiles = L.layerGroup([L.tileLayer(`http://t${nodeRandom}.tianditu.gov.cn/DataServer?T=ter_w&x={x}&y={y}&l={z}&tk=5bb740ffd3a80fb3963e022454eca6e2`), L.tileLayer(`http://t${nodeRandom}.tianditu.gov.cn/DataServer?T=cta_w&x={x}&y={y}&l={z}&tk=5bb740ffd3a80fb3963e022454eca6e2`)])
-baseLayers['#Empty'].tiles = L.tileLayer('https://beidouim.oss-cn-hangzhou.aliyuncs.com/map/img/map_whiteBackGround.jpg', {})
-baseLayers['#Empty'].name = '空白'
-baseLayers['#street'].name = '街道'
-baseLayers['#satellite'].name = '卫星'
-baseLayers['#terrain'].name = '地形'
+nodeRandom === 4 && (nodeRandom = 6);
+// 天地图街道
+baseLayers['#tiandituStreet'].tiles = L.layerGroup([L.tileLayer(`http://t${nodeRandom}.tianditu.gov.cn/DataServer?T=vec_w&x={x}&y={y}&l={z}&tk=5bb740ffd3a80fb3963e022454eca6e2`), L.tileLayer(`http://t${nodeRandom}.tianditu.gov.cn/DataServer?T=cva_w&x={x}&y={y}&l={z}&tk=5bb740ffd3a80fb3963e022454eca6e2`)]);
+// 天地图卫星
+baseLayers['#tiandituSatellite'].tiles = L.layerGroup([L.tileLayer(`http://t${nodeRandom}.tianditu.gov.cn/DataServer?T=img_w&x={x}&y={y}&l={z}&tk=5bb740ffd3a80fb3963e022454eca6e2`), L.tileLayer(`http://t${nodeRandom}.tianditu.gov.cn/DataServer?T=cia_w&x={x}&y={y}&l={z}&tk=5bb740ffd3a80fb3963e022454eca6e2`)]);
+// 天地图地形
+baseLayers['#tiandituTerrain'].tiles = L.layerGroup([L.tileLayer(`http://t${nodeRandom}.tianditu.gov.cn/DataServer?T=ter_w&x={x}&y={y}&l={z}&tk=5bb740ffd3a80fb3963e022454eca6e2`), L.tileLayer(`http://t${nodeRandom}.tianditu.gov.cn/DataServer?T=cta_w&x={x}&y={y}&l={z}&tk=5bb740ffd3a80fb3963e022454eca6e2`)]);
+//空白图层
+baseLayers['#Empty'].tiles = L.tileLayer('https://beidouim.oss-cn-hangzhou.aliyuncs.com/map/img/map_whiteBackGround.jpg', {});
+// 谷歌街道
+baseLayers['#googleStreet'].tiles = L.tileLayer('http://mt0.google.com/vt/lyrs=m&hl=zh-CN&gl=CN&x={x}&y={y}&z={z}&s=Galil&scale=2');
+// 谷歌卫星
+baseLayers['#googleSatellite'].tiles = L.tileLayer('http://mt0.google.com/vt/lyrs=y&hl=zh-CN&gl=CN&x={x}&y={y}&z={z}&s=Galil&scale=2');
+// 谷歌地形
+baseLayers['#googleTerrain'].tiles = L.tileLayer('http://mt0.google.com/vt/lyrs=p&hl=zh-CN&gl=CN&x={x}&y={y}&z={z}&s=Galil&scale=2');
 const tempSetting = {
   空白: baseLayers['#Empty'].tiles,
-  卫星: baseLayers['#satellite'].tiles,
-  地形: baseLayers['#terrain'].tiles,
-  街道: baseLayers['#street'].tiles
+  天地图卫星: baseLayers['#tiandituSatellite'].tiles,
+  天地图地形: baseLayers['#tiandituTerrain'].tiles,
+  天地图街道: baseLayers['#tiandituStreet'].tiles,
+  谷歌卫星: baseLayers['#googleSatellite'].tiles,
+  谷歌地形: baseLayers['#googleTerrain'].tiles,
+  谷歌街道: baseLayers['#googleStreet'].tiles
 }
+//end---设置基本图层:空白+天地图+谷歌
+
 export default {
   map: null,
   markerGroup: null,
@@ -51,13 +61,12 @@ export default {
   polylineMeasure: false,
   mapControl: {},
   drawLatlng: {},
+  drawLayers: [],//绘画的图层
   initLeaflet: function (eleId, options = { lat: 23.1538555, lon: 113.030911, zoom: 4, maxZoom: 18, minZoom: 3 }) {
-    let tempSortKey = ['#Empty', '#satellite', '#terrain', '#street'] //存储名称以便切换图层
-    let defalutLabelIndex = parseInt(sessionStorage.getItem('layerIndex'))
-    if (isNaN(defalutLabelIndex)) {
-      defalutLabelIndex = 3
-    }
-    this.map = null
+    let tempSortKey = ['#Empty', '#tiandituSatellite', '#tiandituTerrain', '#tiandituStreet', '#googleSatellite', '#googleTerrain', '#googleStreet'] //存储名称以便切换图层
+    let defaultLayersNum = parseInt(sessionStorage.getItem('layerIndex'));
+    let defalutLabelIndex = isNaN(defaultLayersNum) ? 3 : defaultLayersNum;
+    this.map = null;
     let reMap
     let lat = options.lat ? options.lat : 23.1538555;
     let lon = options.lon ? options.lon : 113.030911;
@@ -77,7 +86,7 @@ export default {
       measureControl: true
     })
     reMap._controlCorners.topright.style.position = 'absolute'
-    reMap._controlCorners.topright.style.left = '120%'
+    reMap._controlCorners.topright.style.left = '120%' //隐藏调整控件
     this.mapControl.layers = L.control.layers(tempSetting)
     this.mapControl.layers.addTo(reMap).setPosition('topright')
     this.mapControl.zomm = L.control.zoom()
@@ -86,13 +95,10 @@ export default {
     this.mapControl.fullscreen.addTo(reMap).setPosition('topright')
     this.map = reMap
   },
-  changeLayers(){
-
+  changeLayers(idx) {
+    this.mapControl.layers._layerControlInputs[idx].click();
   },
   fitBounds: function (areaData) {
-    // let corner1 = L.latLng(areaData[0])
-    // let corner2 = L.latLng(areaData[1])
-    // let bounds = L.latLngBounds([corner1, corner2])
     this.map.fitBounds(areaData)
   },
   fitPoint(pointData) {
@@ -101,7 +107,12 @@ export default {
   renderPoint(list, layersName = 'layers1', iconUrl = require("@/assets/images/leaflet_icon/marker-icon.png"), clusterFlag = false) {
     if (clusterFlag) {
       this.mapControl[layersName] = L.markerClusterGroup({
-        spiderfyOnMaxZoom: false, showCoverageOnHover: false, zoomToBoundsOnClick: true, disableClusteringAtZoom: 16, maxClusterRadius: 60, iconCreateFunction: function (cluster) {
+        spiderfyOnMaxZoom: false,
+        showCoverageOnHover: false,
+        zoomToBoundsOnClick: true,
+        disableClusteringAtZoom: 16,
+        maxClusterRadius: 60,
+        iconCreateFunction: function (cluster) {
           var tempcount = cluster.getChildCount()
           var tempclass = tempcount > 500 ? 'red' : tempcount > 200 ? 'blue2' : tempcount > 100 ? 'blue' : tempcount > 50 ? 'green2' : 'green'
           return L.divIcon({ html: '<b class="' + tempclass + '">' + cluster.getChildCount() + '</b>' });
@@ -116,7 +127,10 @@ export default {
         iconSize: [25, 41]
       })
       for (var p of list) {
-        this.pointList[p.id] = L.marker(L.latLng(p.lat, p.lon), { icon: icon, info: p }).on('click', function (e) {
+        this.pointList[p.id] = L.marker(L.latLng(p.lat, p.lon), {
+          icon: icon,
+          info: p
+        }).on('click', function (e) {
           fn ? fn(e) : ''
         }) //以id为属性作为点的区别
         this.mapControl[layersName].addLayer(this.pointList[p.id])
@@ -142,7 +156,7 @@ export default {
       this.mapControl[layersName] = L.layerGroup()
     }
     let latlngs = []
-    //绘制台风需要 L.semiCircle radius需要*1000 
+    //绘制台风需要 L.semiCircle radius需要*1000
     let radius = 0
     if (!type.includes('ircle')) {
       for (var p of list) {
@@ -156,11 +170,21 @@ export default {
       options.radius = list.radius * 1000
     }
     switch (type) {
-      case 'polyline': this.drawList = L.polyline(latlngs, options); break;
-      case 'polygon': this.drawList = L.polygon(latlngs, options); break;
-      case 'rectangle': this.drawList = L.rectangle(latlngs, options); break;
-      case 'circle': this.drawList = L.circle(latlngs, options); break;
-      case 'semiCircle': this.drawList = L.semiCircle(latlngs, options); break;
+      case 'polyline':
+        this.drawList = L.polyline(latlngs, options);
+        break;
+      case 'polygon':
+        this.drawList = L.polygon(latlngs, options);
+        break;
+      case 'rectangle':
+        this.drawList = L.rectangle(latlngs, options);
+        break;
+      case 'circle':
+        this.drawList = L.circle(latlngs, options);
+        break;
+      case 'semiCircle':
+        this.drawList = L.semiCircle(latlngs, options);
+        break;
     }
     this.mapControl[layersName].addLayer(this.drawList);
     this.map.addLayer(this.mapControl[layersName]);
@@ -210,5 +234,84 @@ export default {
       this.polylineMeasure = true
       document.querySelector(".js-start").click();
     }
+  },
+  drawHeatMap(data, options = { radius: 10, minOpacity: 0.85 }) {
+    let heatPoints = [];
+    data.forEach(item => {
+      heatPoints.push([item.lat, item.lng, item.count]);
+    })
+    L.heatLayer(heatPoints, options).addTo(this.map);
+  },
+  clearAllEdit(){
+    this.map.pm.disableDraw('Line')
+    this.map.pm.disableDraw('Marker')
+    this.map.pm.disableDraw('Polygon')
+    this.map.pm.disableDraw('Circle')
+    this.map.pm.disableDraw('Rectangle')
+  },
+  editMapGetData(type = 0, color = 'rgba(51, 136, 255, 1)') {
+    this.clearAllEdit();
+    //监听地图经纬度
+    this.map.on('pm:drawstart', ({ workingLayer }) => { // 记录绘制的点得到数据
+      workingLayer.on('pm:vertexadded', e => {
+        localStorage.setItem('drawLatLng', JSON.stringify(e.target._latlngs));//将数据存到localStorage
+      })
+    })
+    let chooseDraw = 'Polygon';//默认多边形
+    let drawType = {
+      0: 'Polygon',
+      1: 'Circle',
+      2: 'Rectangle',
+      3: 'Line',
+    };
+    for (let key in drawType) {
+      if (type === Number(key)) {
+        chooseDraw = drawType[key];
+      }
+    }
+   
+    this.map.pm.enableDraw(chooseDraw,
+      {
+        tooltips: false,
+        templineStyle: {
+          color: color,
+        },
+        hintlineStyle: {
+          color: color,
+          dashArray: [5, 5]
+        },
+        pathOptions: {
+          color: color,
+          fillColor: color,
+        },
+      })
+  },
+  clearEdit(){
+    if(this.drawLayers.length){
+      for (let i = 0; i < this.drawLayers.length; i++) {
+        this.map.removeLayer(this.drawLayers[i].layer)
+      }
+    }
+  },
+  editMarker(iconUrl = require("@/assets/images/leaflet_icon/positionMark.png"), imgWidth = 10, imgHeight = 10,layersName = 'editingMarker') {
+    this.clearAllEdit();
+    if (this.mapControl[layersName]) {
+      this.mapControl[layersName].clearLayers()
+    } else {
+      this.mapControl[layersName] = L.layerGroup()
+    }
+    let iconSize = [imgWidth, imgHeight];
+    let myIcon = L.icon({
+      iconUrl: iconUrl,
+      iconSize: iconSize,
+      iconAnchor: iconSize
+    })
+    this.map.pm.enableDraw('Marker', { tooltips: false, markerStyle: { icon: myIcon } })
+    this.map.on('pm:create', function (e) {
+      this.drawLayers.push(e);
+      localStorage.setItem('drawLatLng', JSON.stringify(e.layer._latlngs));//将数据存到localStorage
+      
+    })
+
   }
 }
