@@ -61,7 +61,6 @@ export default {
   polylineMeasure: false,
   mapControl: {},
   drawLatlng: {},
-  drawLayers: [],//绘画的图层
   initLeaflet: function (eleId, options = { lat: 23.1538555, lon: 113.030911, zoom: 4, maxZoom: 18, minZoom: 3 }) {
     let tempSortKey = ['#Empty', '#tiandituSatellite', '#tiandituTerrain', '#tiandituStreet', '#googleSatellite', '#googleTerrain', '#googleStreet'] //存储名称以便切换图层
     let defaultLayersNum = parseInt(sessionStorage.getItem('layerIndex'));
