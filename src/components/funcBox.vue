@@ -32,13 +32,16 @@
   </div>
 </template>
 <script>
-  import leaf from '@/plugins/leaflet_func'
+  import L from 'leaflet';
+  import hl from '@/plugins/hlLeaflet.js'
+  // import '@/plugins/index.js'
   // import leaf from 'leaflettools'
   import { testData } from '@/plugins/test.js';
   export default {
     name: 'funcBox',
     data () {
       return {
+        hl: null,
         isTrackBack: false,
         isEditPolygon: false,
         isEditCircle: false,
@@ -56,30 +59,35 @@
         isStop: false
       }
     },
+    props: {
+      map: {
+        type: Object,
+        default: () => {
+          return {};
+        }
+      }
+    },
     methods: {
       point () {
         this.isPoint = !this.isPoint
         if (this.isPoint) {
-          let fn = function (e) {
-          }
-          let list = [{ lat: 24, lon: 110, id: 1 }, { lat: 22, lon: 110, id: 3 }]
-          leaf.renderPoint(list, 'layers1', require("@/assets/images/leaflet_icon/marker-icon-2x.png"), true, fn)
-          leaf.renderPoint([{ lat: 25, lon: 110, id: 2 }], 'layers2')
-          leaf.renderPoint([{ lat: 26, lon: 110, id: 2 }], 'layers2')
-          leaf.mapControl['layers1'].bindPopup('Hello').openPopup()
-          leaf.mapControl['layers2'].bindPopup('Hello').openPopup()
+          // 显示内容提前封装在msg中
+          let list = [{ lat: 24, lon: 110, id: 1, showMsg: `显示内容1-24-110` }, { lat: 22, lon: 110, id: 3, showMsg: `显示内容2-24-110` }]
+          hl._renderPoint(this.map, list, 'layers1', require("@/assets/images/leaflet_icon/marker-icon-2x.png"), true)
+          hl._renderPoint(this.map, [{ lat: 25, lon: 110, id: 2, showMsg: `显示内容2-25-110` }], 'layers2')
+          hl._renderPoint(this.map, [{ lat: 26, lon: 110, id: 2, showMsg: `显示内容2-26-110` }], 'layers2')
         } else {
-          leaf.clearLayer('layers1')
-          leaf.clearLayer('layers2')
+          hl._clearLayer(this.map, 'layers1')
+          hl._clearLayer(this.map, 'layers2')
         }
       },
       polyline () {
         this.isPolyline = !this.isPolyline
         if (this.isPolyline) {
           let list = [{ lat: 24, lon: 110 }, { lat: 32, lon: 112 }, { lat: 21, lon: 113 }]
-          leaf.drawDataInMap(list, 'polyline', 'polyline', { color: 'blue', weight: 1 })
+          hl._drawByData(this.map, list, 'polyline', 'polyline', { color: 'blue', weight: 1 })
         } else {
-          leaf.clearLayer('polyline')
+          hl._clearLayer(this.map, 'polyline')
         }
       },
       polygon () {
@@ -87,11 +95,11 @@
         let list = [[{ lat: 24, lon: 110 }, { lat: 22, lon: 110 }, { lat: 32, lon: 112 }, { lat: 25, lon: 14 }], [{ lat: 19, lon: 10 }, { lat: 12, lon: 80 }, { lat: 2, lon: 22 }, { lat: 5, lon: 14 }]]
         if (this.isPolygon) {
           list.forEach((p, i) => {
-            leaf.drawDataInMap(p, `polygon${i}`, 'polygon', { color: 'green', weight: 1 })
+            hl._drawByData(this.map, p, `polygon${i}`, 'polygon', { color: 'green', weight: 1 })
           })
         } else {
           for (var i in list) {
-            leaf.clearLayer(`polygon${i}`)
+            hl._clearLayer(this.map, `polygon${i}`)
           }
         }
       },
@@ -100,11 +108,11 @@
         let list = [[{ lat: 24, lon: 110, id: 1 }, { lat: 24, lon: 121, id: 2 }, { lat: 30, lon: 121, id: 3 }, { lat: 30, lon: 110, id: 4 }], [{ lat: 14, lon: 90, id: 5 }, { lat: 14, lon: 100, id: 6 }, { lat: 20, lon: 90, id: 7 }, { lat: 20, lon: 100, id: 8 }]]
         if (this.isRectangle) {
           list.forEach((p, i) => {
-            leaf.drawDataInMap(p, `rectangle${i}`, 'rectangle', { color: 'blue', weight: 1 })
+            hl._drawByData(this.map, p, `rectangle${i}`, 'rectangle', { color: 'blue', weight: 1 })
           })
         } else {
           for (var i in list) {
-            leaf.clearLayer(`rectangle${i}`)
+            hl._clearLayer(this.map, `rectangle${i}`)
           }
         }
       },
@@ -114,24 +122,24 @@
         let areaData = []
         if (this.isCircle) {
           list.forEach((p, i) => {
-            leaf.drawDataInMap(p, `circle${i}`, 'circle', { color: 'red', weight: 1 })
+            hl._drawByData(this.map, p, `circle${i}`, 'circle', { color: 'red', weight: 1 })
             areaData.push([p.lat, p.lon])
           })
-          leaf.fitBounds(areaData) //聚集
+          hl._fitBounds(this.map, areaData) //适当放大
         } else {
           for (var i in list) {
-            leaf.clearLayer(`circle${i}`)
+            hl._clearLayer(this.map, `circle${i}`)
           }
         }
       },
       fullScreen () {
-        leaf.mapControl.fullscreen.link.click()
+        hl.mapControl.fullscreen.link.click()
       },
       actMapZoomIO: function (key) {
         if (key > 0) {
-          leaf.map.zoomIn()
+          hl.map.zoomIn()
         } else if (key < 0) {
-          leaf.map.zoomOut()
+          hl.map.zoomOut()
         }
       },
       angleCircle () {
@@ -148,28 +156,28 @@
 
         if (this.isAngleCircle) {
           arr.forEach((p, i) => {
-            leaf.drawDataInMap(p, `semiCircle${i}`, 'semiCircle', { fillColor: '#FF9C00', fillOpacity: 0.3, color: 'transparent', startAngle: p.startAngle, stopAngle: p.stopAngle })
+            hl._drawByData(this.map, p, `semiCircle${i}`, 'semiCircle', { fillColor: '#FF9C00', fillOpacity: 0.3, color: 'transparent', startAngle: p.startAngle, stopAngle: p.stopAngle })
           })
         } else {
           for (var i in arr) {
-            leaf.clearLayer(`semiCircle${i}`)
+            hl._clearLayer(this.map, `semiCircle${i}`)
           }
         }
       },
       mearsure () {
         this.isMeasure = !this.isMeasure;
-        leaf.measure();
+        hl.measure();
       },
       area () {
         this.isArea = !this.isArea;
-        leaf.mearsureArea();
+        hl.mearsureArea();
       },
       changeLayers (idx) {
-        leaf.changeLayers(idx);
+        hl._changeLayers(this.map, idx);
       },
       draw (type) {
-        leaf.drawInMap(type, { iconUrl: require("@/assets/images/leaflet_icon/marker-icon.png"), iconSize: [10, 10] })
-        leaf.map.on('pm:create', function (e) { //监听绘制
+        hl.drawInMap(type, { iconUrl: require("@/assets/images/leaflet_icon/marker-icon.png"), iconSize: [10, 10] })
+        hl.map.on('pm:create', function (e) { //监听绘制
           if (e.shape === 'Marker') {
             console.log(e.marker._latlng)
           }
@@ -185,29 +193,29 @@
           lng: 119.69847,
           count: 19
         }]
-        leaf.drawHeatMap(data);
+        hl.drawHeatMap(data);
       },
       edit (type) {
         if (type === 0) { //多边形
           this.isEditPolygon = !this.isEditPolygon;
           if (this.isEditPolygon) {
-            leaf.editMapGetData(type);
+            hl.editMapGetData(type);
           } else {
-            leaf.clearLayer('editingLayers');
+            hl._clearLayer(this.map, 'editingLayers');
           }
         } else if (type === 1) { //圆形
           this.isEditCircle = !this.isEditCircle;
           if (this.isEditCircle) {
-            leaf.editMapGetData(type);
+            hl.editMapGetData(type);
           } else {
-            leaf.clearLayer('editingLayers');
+            hl._clearLayer(this.map, 'editingLayers');
           }
         } else { //矩形
           this.isEditRectangle = !this.isEditRectangle;
           if (this.isEditRectangle) {
-            leaf.editMapGetData(type);
+            hl.editMapGetData(type);
           } else {
-            leaf.clearLayer('editingLayers');
+            hl._clearLayer(this.map, 'editingLayers');
           }
         }
 
@@ -215,30 +223,30 @@
       editMarker () {
         this.isEditMarker = !this.isEditMarker;
         if (this.isEditMarker) {
-          leaf.editMarker();
+          hl.editMarker();
         } else {//  清除Maker
-          leaf.clearLayer('editingMarker');
+          hl._clearLayer(this.map, 'editingMarker');
         }
       },
       trackBack () {
         this.isTrackBack = !this.isTrackBack;
         if (this.isTrackBack) {
-          leaf.trackBack(testData);
+          hl.trackBack(testData);
         } else {//  清除轨迹
-          leaf.clearTrackBack();
+          hl.clearTrackBack();
         }
       },
       quitTrack () {
         this.isStop = !this.isStop;
-        if (this.isStop) { leaf.quitTrack(); } else {
-          leaf.drawTrack();
+        if (this.isStop) { hl.quitTrack(); } else {
+          hl.drawTrack();
         }
       },
       setSpeed (speed) {
-        leaf.setTrackSpeed(speed);
+        hl.setTrackSpeed(speed);
       },
       restartTrack () {
-        leaf.restartTrack();
+        hl.restartTrack();
       }
     },
 

@@ -1,23 +1,20 @@
 <template>
-  <div id="mapView">
+  <div id="testView">
     <func-box style="width:1200px;margin: auto;" :map="map"></func-box>
     <!-- map地图，需要指定宽度高度 -->
-    <div id="map" style="width:800px;height:500px;margin: auto;margin-bottom:20px;"></div>
+    <div id="map2" style="width:800px;height:500px;margin: auto;"></div>
   </div>
 </template>
 <script>
-  // import leaf from '@/plugins/leaflet_func.js'
   import hl from '@/plugins/hlLeaflet.js'
-  // import '@/plugins/index.js'
-  // import leaf from 'leaflettools'
   import funcBox from '@/components/funcBox.vue'
   export default {
-    name: 'mapView',
+    name: 'testView',
     components: {
       funcBox
     },
     mounted () {
-      this.map = hl._initMap("map", { lat: 24, lon: 110, zoom: 8 })
+      this.map = hl._initMap("map2", { lat: 24, lon: 110, zoom: 4 })
     },
     data () {
       return {
@@ -26,7 +23,7 @@
     },
     methods: {
       _changeLayers () {
-        hl._changeLayers(this.map, 1)
+        hl._changeLayers(this.map, 2)
       }
     }
   }
