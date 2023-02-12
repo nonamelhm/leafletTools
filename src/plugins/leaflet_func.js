@@ -195,11 +195,11 @@ export default {
     this.mapControl[layersName].addLayer(this.drawList);
     this.map.addLayer(this.mapControl[layersName]);
   },
-  drawInMap (type, options = { iconSie: [15, 15], iconUrl: 'https://oss.irim.online/eim/icon/boat/positionMark.png' }) { //绘制在地图上
+  drawInMap (type, options = { iconSie: [15, 15], iconUrl: 'https://oss.irim.online/eim/icon/boat/position-icon.png' }) { //绘制在地图上
     switch (type) {
       case 'marker':
         let iconSize = options && options.iconSize ? options.iconSize : [15, 15]
-        let iconUrl = options && options.iconUrl ? options.iconUrl : 'https://oss.irim.online/eim/icon/boat/positionMark.png'
+        let iconUrl = options && options.iconUrl ? options.iconUrl : 'https://oss.irim.online/eim/icon/boat/position-icon.png'
         let myIcon = L.icon({
           iconUrl: iconUrl,
           iconSize: iconSize,
@@ -327,7 +327,7 @@ export default {
     })
 
   },
-  editMarker (iconUrl = require("@/assets/images/leaflet_icon/positionMark.png"), imgWidth = 20, imgHeight = 20, layersName = 'editingMarker') {
+  editMarker (iconUrl = require("@/assets/images/leaflet_icon/position-icon.png"), imgWidth = 20, imgHeight = 20, layersName = 'editingMarker') {
     this.clearAllEdit();
     if (this.mapControl[layersName]) {
       this.mapControl[layersName].clearLayers()
@@ -357,9 +357,8 @@ export default {
       })
     })
   },
-  trackBack (data, color = '#03ff09', imgUrl = 'https://oss.irim.online/eob/icon/RUNNING3.png?v=7', width = 40, height = 40, unit = `km/h`, wakeTimeDiff = 100) { //轨迹回放
-    // L.vue = _this;
-    this.trackplay = L.trackplayback(data, this.map, {
+  _trackplay (map, data, color = '#03ff09', imgUrl = 'https://oss.irim.online/eob/icon/RUNNING3.png?v=7', width = 40, height = 40, unit = `km/h`, wakeTimeDiff = 100) { //轨迹回放
+    this.trackplay = L.trackplayback(data, map, {
       targetOptions: {
         useImg: true,
         imgUrl,
@@ -379,7 +378,7 @@ export default {
       }
     })
     this.trackplaybackControl = L.trackplaybackcontrol(this.trackplay);
-    this.trackplaybackControl.addTo(this.map);
+    this.trackplaybackControl.addTo(map);
     this.drawTrack();
   },
   drawTrack (isDrawLine = true) {//默认绘制路线

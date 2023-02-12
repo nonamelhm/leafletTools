@@ -7,9 +7,9 @@
       <li @click="rectangle()">{{ isRectangle ? '清除矩形' : '数据绘矩形' }}</li>
       <li @click="circle()">{{ isCircle ? '清除圆形' : '数据绘圆形' }}</li>
       <li @click="angleCircle()">{{ isAngleCircle ? '清除角度画圆（台风风圈）' : '绘制角度画圆（台风风圈）' }}</li>
-      <li @click="mearsure()">{{ isMeasure ? '取消测量' : '测量距离' }}</li>
-      <li @click="area()">{{ isArea ? '取消测量' : '测量面积' }}</li>
-      <li @click="draw('marker')">{{ isDrawing ? '取消地图绘点' : '地图绘点' }}</li>
+      <li @click="mearsure()">测量距离</li>
+      <li @click="area()">测量面积</li>
+      <!-- <li @click="draw('marker')">{{ isDrawing ? '取消地图绘点' : '地图绘点' }}</li> -->
       <li @click="hotMap()">热力图</li>
       <li @click="changeLayers(1)">切换天地图卫星图</li>
       <li @click="changeLayers(2)">切换天地图地形图</li>
@@ -23,7 +23,7 @@
       <li @click="edit(0)">{{ isEditPolygon? '清除绘制多边形':'直接绘制多边形'}}</li>
       <li @click="edit(1)">{{ isEditCircle? '清除绘制圆形':'直接绘制圆形'}}</li>
       <li @click="edit(2)">{{ isEditRectangle?'清除绘制矩形':'直接绘制矩形'}}</li>
-      <li @click="editMarker()">{{isEditMarker ? '清除绘点' : '直接绘点' }}</li>
+      <li @click="editMarkerGetData()">{{iseditMarkerGetData ? '清除绘点' : '直接绘点' }}</li>
       <li @click="trackBack()">{{isTrackBack ? '清除轨迹' : '轨迹回放' }}</li>
       <li @click="quitTrack()">{{isStop?'开启轨迹回放':'暂停轨迹回放'}}</li>
       <li @click="setTrackSpeed(10)">设置轨迹回放速度为10</li>
@@ -46,7 +46,7 @@
         isEditPolygon: false,
         isEditCircle: false,
         isEditRectangle: false,
-        isEditMarker: false,
+        iseditMarkerGetData: false,
         isPoint: false,
         isPolyline: false,
         isPolygon: false,
@@ -133,13 +133,13 @@
         }
       },
       fullScreen () {
-        hl.mapControl.fullscreen.link.click()
+        hl._fullScreen(this.map);
       },
       actMapZoomIO: function (key) {
         if (key > 0) {
-          hl.map.zoomIn()
+          hl._zoomAdd(this.map)
         } else if (key < 0) {
-          hl.map.zoomOut()
+          hl._zoomSub(this.map)
         }
       },
       angleCircle () {
@@ -165,18 +165,22 @@
         }
       },
       mearsure () {
-        this.isMeasure = !this.isMeasure;
-        hl.measure();
+        hl._measure(this.map);
       },
       area () {
-        this.isArea = !this.isArea;
-        hl.mearsureArea();
+        let fn = function () {
+          alert('test')
+        }
+        hl._mearsureArea(this.map);
+        this.map.on('measurefinish', function (evt) { //监听绘画结束调用函数
+          if (fn) fn();
+        })
       },
       changeLayers (idx) {
         hl._changeLayers(this.map, idx);
       },
       draw (type) {
-        hl.drawInMap(type, { iconUrl: require("@/assets/images/leaflet_icon/marker-icon.png"), iconSize: [10, 10] })
+        hl._drawInMap(this.map, type, { iconUrl: require("@/assets/images/leaflet_icon/marker-icon.png"), iconSize: [10, 10] })
         hl.map.on('pm:create', function (e) { //监听绘制
           if (e.shape === 'Marker') {
             console.log(e.marker._latlng)
@@ -193,37 +197,37 @@
           lng: 119.69847,
           count: 19
         }]
-        hl.drawHeatMap(data);
+        hl._drawHeatMap(this.map, data);
       },
       edit (type) {
         if (type === 0) { //多边形
           this.isEditPolygon = !this.isEditPolygon;
           if (this.isEditPolygon) {
-            hl.editMapGetData(type);
+            hl._editMapGetData(this.map, type);
           } else {
             hl._clearLayer(this.map, 'editingLayers');
           }
         } else if (type === 1) { //圆形
           this.isEditCircle = !this.isEditCircle;
           if (this.isEditCircle) {
-            hl.editMapGetData(type);
+            hl._editMapGetData(this.map, type);
           } else {
             hl._clearLayer(this.map, 'editingLayers');
           }
         } else { //矩形
           this.isEditRectangle = !this.isEditRectangle;
           if (this.isEditRectangle) {
-            hl.editMapGetData(type);
+            hl._editMapGetData(this.map, type);
           } else {
             hl._clearLayer(this.map, 'editingLayers');
           }
         }
 
       },
-      editMarker () {
-        this.isEditMarker = !this.isEditMarker;
-        if (this.isEditMarker) {
-          hl.editMarker();
+      editMarkerGetData () {
+        this.iseditMarkerGetData = !this.iseditMarkerGetData;
+        if (this.iseditMarkerGetData) {
+          hl._editMarkerGetData(this.map);
         } else {//  清除Maker
           hl._clearLayer(this.map, 'editingMarker');
         }
@@ -231,22 +235,22 @@
       trackBack () {
         this.isTrackBack = !this.isTrackBack;
         if (this.isTrackBack) {
-          hl.trackBack(testData);
+          hl._trackPlay(this.map, testData);
         } else {//  清除轨迹
-          hl.clearTrackBack();
+          hl._clearTrackBack();
         }
       },
       quitTrack () {
         this.isStop = !this.isStop;
-        if (this.isStop) { hl.quitTrack(); } else {
-          hl.drawTrack();
+        if (this.isStop) { hl._quitTrack(); } else {
+          hl._drawTrack();
         }
       },
       setSpeed (speed) {
-        hl.setTrackSpeed(speed);
+        hl._setTrackSpeed(speed);
       },
       restartTrack () {
-        hl.restartTrack();
+        hl._restartTrack();
       }
     },
 

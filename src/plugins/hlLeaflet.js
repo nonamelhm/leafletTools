@@ -6,6 +6,8 @@ import 'leaflet.pm/dist/leaflet.pm.css';
 import '@/assets/js/Leaflet.PolylineMeasure.js';
 import 'leaflet-measure/dist/leaflet-measure.css';// 测面积
 import 'leaflet-measure/dist/leaflet-measure.cn';
+import calc from 'leaflet-measure/src/calc'
+import { selectOne as selectOne } from 'leaflet-measure/src/dom'
 import "leaflet.fullscreen/Control.FullScreen.css";
 import "leaflet.fullscreen";
 import "leaflet.markercluster/dist/MarkerCluster.css";
@@ -47,8 +49,7 @@ export default {
     preferCanvas: true,
     attributionControl: false,
     zoomControl: false,
-    fullscreenControl: false,
-    measureControl: true
+    fullscreenControl: false
   },
   _conf () {
     //start---设置基本图层:空白+天地图+谷歌
@@ -113,8 +114,7 @@ export default {
     reMap._controlCorners.topright.style.left = '120%' //隐藏调整控件
     this.mapControl.zomm = L.control.zoom()
     this.mapControl.zomm.addTo(reMap).setPosition('topright')
-    this.mapControl.fullscreen = L.control.fullscreen()
-    this.mapControl.fullscreen.addTo(reMap).setPosition('topright')
+    this.mapControl.fullscreen = L.control.fullscreen();
     this.map = reMap
     return this.map;
   },
@@ -124,7 +124,6 @@ export default {
     this.mapControl.layers._layerControlInputs[idx].click();
   },
   _fitBounds: function (map, areaData) {
-    console.log(areaData)
     map.fitBounds(areaData)
   },
   _fitPoint (map, pointData) {
@@ -215,6 +214,308 @@ export default {
     this.mapControl[layersName].addLayer(this.drawList);
     map.addLayer(this.mapControl[layersName]);
   },
+  _measure (map) {
+    L.control.polylineMeasure({
+      position: 'topleft',
+      unit: 'kilometres', //最小单位
+      showBearings: true,
+      clearMeasurementsOnStop: false,
+      showClearControl: true,
+      showUnitControl: true,
+      bearingTextIn: '起点',
+      bearingTextOut: '终点',
+      tooltipTextFinish: '单击并<b>拖动到移动点</b><br>',
+      tooltipTextDelete: '<b>按shift键，然后单击删除</b>',
+      unitControlLabel: {
+        metres: '米',
+        kilometres: '千米',
+        feet: '英尺',
+        landmiles: '英里',
+        nauticalmiles: '海里'
+      },
+    }).addTo(map)
+    document.getElementById(`polyline-measure-control`).click()
+  },
+  _mearsureArea (map) {
+    // 继承测面积插件的_handleMeasureDoubleClick方法，改写弹窗内容
+    let newMeasureRules = L.Control.Measure.extend({
+      _handleMeasureDoubleClick: function () {
+        const latlngs = this._latlngs
+        let resultFeature, popupContent
+        this._finishMeasure()
+        if (!latlngs.length) {
+          return
+        }
+        if (latlngs.length > 2) {
+          latlngs.push(latlngs[0]) // close path to get full perimeter measurement for areas
+        }
+        const calced = calc(latlngs)
+        let strHtml = '', buttonHtml = ''
+        if (latlngs.length === 1) {
+          resultFeature = L.circleMarker(latlngs[0], this._symbols.getSymbol('resultPoint'))
+          popupContent = calced
+          strHtml = `<p style="margin: 0; padding-top: 10px;">${popupContent.lastCoord.dms.y} / ${popupContent.lastCoord.dms.x}</p><p style="margin: 0; padding-top: 10px;">${popupContent.lastCoord.dd.y} / ${popupContent.lastCoord.dd.x}</p>`
+          buttonHtml = `<ul class="tasks"><li><a href="#" class="js-zoomto zoomto">该位置居中</a></li> <li><a href="#" class="js-deletemarkup deletemarkup">删除</a></li></ul>`
+        } else if (latlngs.length === 2) {
+          resultFeature = L.polyline(latlngs, this._symbols.getSymbol('resultLine'))
+          popupContent = this._getMeasurementDisplayStrings(calced)
+          strHtml = `<p style="margin: 0; padding-top: 10px;">${popupContent.lengthDisplay}</p>`
+          buttonHtml = `<ul class="tasks"><li><a href="#" class="js-zoomto zoomto">该线段居中</a></li> <li><a href="#" class="js-deletemarkup deletemarkup">删除</a></li></ul>`
+        } else {
+          resultFeature = L.polygon(latlngs, this._symbols.getSymbol('resultArea'))
+          strHtml = `<p style="margin: 0; padding-top: 10px;">${(calced.area * (1e-6)).toFixed(2)} 平方千米</p><p style="margin: 0; padding-top: 10px;">${(calced.area * 0.0015).toFixed(2)} 亩</p><p style="margin: 0; padding-top: 10px;">${(calced.area * 0.000015).toFixed(2)} 顷</p><p style="margin: 0; padding-top: 10px;">${(calced.area * 0.0001).toFixed(2)} 公顷</p><p style="margin: 0; padding-top: 10px;">${(calced.area * 1).toFixed(2)} 平方米</p><p style="margin: 0; padding-top: 10px;">${(calced.area * 0.0002471).toFixed(2)} 英亩</p><p style="margin: 0; padding-top: 10px;">${(calced.area * 3.8610e-7).toFixed(2)} 平方英里</p><p style="margin: 0; padding-top: 10px;">${(calced.area * 10.7639104).toFixed(2)} 平方英尺</p><p style="margin: 0; padding-top: 10px;">${(calced.area * 1.19599).toFixed(2)} 平方码</p>`
+          buttonHtml = `<ul class="tasks"><li><a href="#" class="js-zoomto zoomto">该面积居中</a></li> <li><a href="#" class="js-deletemarkup deletemarkup">删除</a></li> </ul>`
+        }
+        const popupContainer = L.DomUtil.create('div', '')
+        popupContainer.innerHTML = strHtml + buttonHtml
+        const zoomLink = selectOne('.js-zoomto', popupContainer)
+        if (zoomLink) {
+          L.DomEvent.on(zoomLink, 'click', L.DomEvent.stop)
+          L.DomEvent.on(
+            zoomLink,
+            'click',
+            function () {
+              if (resultFeature.getBounds) {
+                this._map.fitBounds(resultFeature.getBounds(), {
+                  padding: [20, 20],
+                  maxZoom: 17
+                })
+              } else if (resultFeature.getLatLng) {
+                this._map.panTo(resultFeature.getLatLng())
+              }
+            },
+            this
+          )
+        }
+        const deleteLink = selectOne('.js-deletemarkup', popupContainer)
+        if (deleteLink) {
+          L.DomEvent.on(deleteLink, 'click', L.DomEvent.stop)
+          L.DomEvent.on(
+            deleteLink,
+            'click',
+            function () {
+              // TODO. maybe remove any event handlers on zoom and delete buttons?
+              this._layer.removeLayer(resultFeature)
+            },
+            this
+          )
+        }
+        resultFeature.addTo(this._layer)
+        resultFeature.bindPopup(popupContainer, this.options.popupOptions)
+        if (resultFeature.getBounds) {
+          resultFeature.openPopup(resultFeature.getBounds().getCenter())
+        } else if (resultFeature.getLatLng) {
+          resultFeature.openPopup(resultFeature.getLatLng())
+        }
+      },
+      _startMeasure: function () {
+        this._locked = !0, this._measureVertexes = L.featureGroup().addTo(this._layer), this._captureMarker = L.marker(this._map.getCenter(), {
+          clickable: !0,
+          zIndexOffset: this.options.captureZIndex,
+          opacity: 0,
+          autoPanOnFocus: false
+        }).addTo(this._layer), this._setCaptureMarkerIcon(), this._captureMarker.on('mouseout', this._handleMapMouseOut, this).on('dblclick', this._handleMeasureDoubleClick, this).on('click', this._handleMeasureClick, this), this._map.on('mousemove', this._handleMeasureMove, this).on('mouseout', this._handleMapMouseOut, this).on('move', this._centerCaptureMarker, this).on('resize', this._setCaptureMarkerIcon, this), L.DomEvent.on(this._container, 'mouseenter', this._handleMapMouseOut, this), this._updateMeasureStartedNoPoints(), this._map.fire('measurestart', null, !1)
+      },
+    })
+    let measureRules = new newMeasureRules({
+      position: 'topright',
+      activeColor: '#0f0',
+      completedColor: '#0f0',
+      popupOptions: {
+        className: 'leaflet-measure-resultpopup',
+        autoPanPadding: [10, 10]
+      },
+      primaryLengthUnit: 'meters',
+      secondaryLengthUnit: 'kilometers',
+      primaryAreaUnit: 'sqmeters',
+      secondaryAreaUnit: 'hectares'
+    })
+    map.addControl(measureRules);
+    document.querySelector(".js-start").click();
+  },
+  _drawInMap (map, type, iconSize = [20, 20], iconUrl = require('@/assets/images/leaflet_icon/position-icon.png')) { //绘制在地图上
+    switch (type) {
+      case 'marker':
+        let myIcon = L.icon({
+          iconUrl: iconUrl,
+          iconSize: iconSize,
+          iconAnchor: [iconSize[0] / 2, iconSize[1] / 2]
+        })
+        map.pm.enableDraw('Marker', { tooltips: false, markerStyle: { icon: myIcon } });
+        break;
+      case '':
+    }
+  },
+  _editMarkerGetData (map, iconUrl = require("@/assets/images/leaflet_icon/position-icon.png"), imgWidth = 20, imgHeight = 20, layersName = 'editingMarker') {
+    this._clearAllEdit(map);
+    if (map.hasLayer(this.mapControl[layersName])) {
+      this.mapControl[layersName].clearLayers()
+    } else {
+      this.mapControl[layersName] = L.layerGroup()
+    }
+    let iconSize = [imgWidth, imgHeight];
+    let myIcon = L.icon({
+      iconUrl: iconUrl,
+      iconSize: iconSize,
+      iconAnchor: iconSize
+    })
+    map.pm.enableDraw('Marker', {
+      tooltips: false,
+      markerStyle: { icon: myIcon },
+      snappable: true, //启⽤捕捉到其他绘制图形的顶点
+      snapDistance: 20, //顶点捕捉距离
+    })
+    let _this = this;
+    map.on('pm:create', function (e) {
+      _this.drawList = e.layer;
+      _this.mapControl[layersName].addLayer(_this.drawList);
+      map.addLayer(_this.mapControl[layersName]);
+      localStorage.setItem('drawLatLng', JSON.stringify(e.layer._latlng));//将数据存到localStorage
+      e.layer.on('pm:edit', e2 => {
+        localStorage.setItem('drawLatLng', JSON.stringify(e2.sourceTarget._latlng));//将数据存到localStorage
+      })
+    })
+  },
+  _editMapGetData (map, type = 0, color = 'rgba(51, 136, 255, 1)', layersName = 'editingLayers') {
+    this._clearAllEdit(map);
+    if (map.hasLayer(this.mapControl[layersName])) {
+      this.mapControl[layersName].clearLayers()
+    } else {
+      this.mapControl[layersName] = L.layerGroup()
+    }
+    let chooseDraw = 'Polygon';//默认多边形
+    let drawType = {
+      0: 'Polygon',
+      1: 'Circle',
+      2: 'Rectangle',
+      3: 'Line',
+    };
+    for (let key in drawType) {
+      if (type === Number(key)) {
+        chooseDraw = drawType[key];
+      }
+    }
+    map.pm.enableDraw(chooseDraw,
+      {
+        tooltips: false,
+        templineStyle: {
+          color: color,
+        },
+        hintlineStyle: {
+          color: color,
+          dashArray: [5, 5]
+        },
+        pathOptions: {
+          color: color,
+          fillColor: color,
+        },
+        snappable: true, //启⽤捕捉到其他绘制图形的顶点
+        snapDistance: 20, //顶点捕捉距离
+      })
+    //监听地图经纬度
+    let _this = this;
+    map.on('pm:create', e => {
+      _this.drawList = e.layer;
+      _this.mapControl[layersName].addLayer(_this.drawList);
+      map.addLayer(_this.mapControl[layersName]);
+      if (type !== 0) {
+        if (type === 1) {//圆形
+          localStorage.setItem('drawLatLng', JSON.stringify(e.layer._latlng));//将数据存到localStorage
+          localStorage.setItem('drawCircleRadius', e.layer._mRadius);//将数据存到localStorage
+
+        } else {
+          localStorage.setItem('drawLatLng', JSON.stringify(e.layer._latlngs));//将数据存到localStorage
+        }
+      }
+      e.layer.pm.enable();
+      e.layer.on('pm:edit', e2 => {
+        if (type === 1) {//圆形
+          localStorage.setItem('drawLatLng', JSON.stringify(e2.sourceTarget._latlng));//
+          localStorage.setItem('drawCircleRadius', e2.sourceTarget._mRadius);//将数据存到localStorage
+        } else {
+          localStorage.setItem('drawLatLng', JSON.stringify(e2.sourceTarget._latlngs));//将数据存到localStorage
+        }
+
+      })
+    })
+    map.on('pm:drawstart', ({ workingLayer }) => { // 记录绘制的点得到数据
+      workingLayer.on('pm:vertexadded', e => {
+        _this.drawList = e.workingLayer;
+        _this.mapControl[layersName].addLayer(_this.drawList);
+        map.addLayer(_this.mapControl[layersName]);
+        localStorage.setItem('drawLatLng', JSON.stringify(e.target._latlngs));//将数据存到localStorage
+      })
+    })
+
+  },
+  _drawHeatMap (map, data, options = { radius: 10, minOpacity: 0.85 }) {
+    let heatPoints = [];
+    data.forEach(item => {
+      heatPoints.push([item.lat, item.lng, item.count]);
+    })
+    L.heatLayer(heatPoints, options).addTo(map);
+  },
+  _fullScreen (map) {
+    this.mapControl.fullscreen.addTo(map).setPosition('topright');
+    this.mapControl.fullscreen.link.click();
+  },
+  _zoomAdd (map) {
+    map.zoomIn();
+  },
+  _zoomSub (map) {
+    map.zoomOut();
+  },
+  _trackPlay (map, data, color = '#03ff09', imgUrl = require("@/assets/images/leaflet_icon/trackplay-icon.png"), width = 40, height = 40, unit = `km/h`, wakeTimeDiff = 100) { //轨迹回放
+    let _this = this;
+    this._loadPic(imgUrl).then(() => {
+      _this.trackplay = L.trackplayback(data, map, {
+        targetOptions: {
+          useImg: true,
+          imgUrl,
+          width,
+          height,
+          unit,
+          replayType: false, // false 多个回放 true 单个回放
+          isDir: 1 // 通用图标才有方向变化
+        },
+        trackLineOptions: {
+          isDraw: true, // 是否画线
+          stroke: true,
+          color, // 线条颜色
+          weight: 2, // 线条宽度
+          opacity: 1, // 透明度
+          wakeTimeDiff// 尾迹时间控制 不传默认一年
+        }
+      })
+      _this.trackplaybackControl = L.trackplaybackcontrol(_this.trackplay);
+      _this.trackplaybackControl.addTo(map);
+      _this._drawTrack();
+    })
+  },
+  _drawTrack (isDrawLine = true) {//默认绘制路线
+    document.querySelectorAll('.trackplayback-input')[1].checked = isDrawLine;  // 画线
+    document.querySelector(".buttonContainer .btn-stop").click(); //开始预览
+  },
+  _setTrackSpeed (speed) {//设置速度
+
+    this.trackplay.setSpeed(speed);
+  },
+  _clearTrackBack () {//清除
+    document.querySelector(".buttonContainer .btn-close").click(); //删除轨迹
+  },
+  _restartTrack () {//刷新
+    document.querySelector(".buttonContainer .btn-restart").click(); //重新开始
+  },
+  _quitTrack () { //暂停
+    document.querySelector(".buttonContainer .btn-start").click(); //重新开始
+  },
+  _clearAllEdit (map) {
+    map.pm.disableDraw('Line')
+    map.pm.disableDraw('Marker')
+    map.pm.disableDraw('Polygon')
+    map.pm.disableDraw('Circle')
+    map.pm.disableDraw('Rectangle')
+  },
   _loadPic (url) {
     return new Promise(function (pass, fall) {
       var img = new Image()
@@ -222,212 +523,6 @@ export default {
       img.onerrof = fall()
       img.src = require(`${url}`) // 解决依赖代码不支持变量，需要转模板模式
     })
-  },
-
-  remove: function () {
-    this._bufferTracks = []
-    if (this._map.hasLayer(this._trackPointFeatureGroup)) {
-      this._map.removeLayer(this._trackPointFeatureGroup)
-    }
-  },
-
-  clear: function () {
-    this._clearLayer()
-    this._bufferTracks = []
-  },
-
-  _trackLayerUpdate: function () {
-    if (this._bufferTracks.length) {
-      this._clearLayer()
-      this._bufferTracks.forEach(function (element, index) {
-        this._drawTrack(element)
-      }.bind(this))
-    }
-  },
-
-  _onmousemoveEvt: function (e) {
-    localStorage.setItem("currentLocation", JSON.stringify(e.latlng))
-  },
-
-  _opentoolTip: function (trackpoint) {
-    if (this._map.hasLayer(this._tooltip)) {
-      this._map.removeLayer(this._tooltip)
-    }
-    this._canvas.style.cursor = 'default'
-    let latlng = L.latLng(trackpoint.lat, trackpoint.lng)
-    let tooltip = this._tooltip = L.tooltip(this.toolTipOptions)
-    tooltip.setLatLng(latlng)
-    tooltip.addTo(this._map)
-    tooltip.setContent(this._getTooltipText(trackpoint))
-  },
-
-  _drawTrack: function (trackpoints) {
-    // 画轨迹线
-    if (this._showTrackLine) {
-      this._drawTrackLine(trackpoints)
-    }
-    // 画船
-    let targetPoint = trackpoints[trackpoints.length - 1]
-    if (this.targetOptions.useImg && this._targetImg) {
-      this._drawShipImage(targetPoint)
-    } else {
-      this._drawShipCanvas(targetPoint)
-    }
-    // 画标注信息
-    if (this.targetOptions.showText) {
-      this._drawtxt(`航向：${parseInt(targetPoint.dir)}度`, targetPoint)
-    }
-    // 画经过的轨迹点
-    if (this._showTrackPoint) {
-      if (this.trackPointOptions.useCanvas) {
-        this._drawTrackPointsCanvas(trackpoints)
-      } else {
-        this._drawTrackPointsSvg(trackpoints)
-      }
-    }
-  },
-
-  _drawTrackLine: function (trackpoints) {
-    let options = this.trackLineOptions
-    let tp0 = this._getLayerPoint(trackpoints[0])
-    this._ctx.save()
-    this._ctx.beginPath()
-    // 画轨迹线
-    this._ctx.moveTo(tp0.x, tp0.y)
-    for (let i = 1, len = trackpoints.length; i < len; i++) {
-      let tpi = this._getLayerPoint(trackpoints[i])
-      this._ctx.lineTo(tpi.x, tpi.y)
-    }
-    this._ctx.globalAlpha = options.opacity
-    if (options.stroke) {
-      this._ctx.strokeStyle = options.color
-      this._ctx.lineWidth = options.weight
-      this._ctx.stroke()
-    }
-    if (options.fill) {
-      this._ctx.fillStyle = options.fillColor
-      this._ctx.fill()
-    }
-    this._ctx.restore()
-  },
-
-  _drawTrackPointsCanvas: function (trackpoints) {
-    let options = this.trackPointOptions
-    this._ctx.save()
-    for (let i = 0, len = trackpoints.length; i < len; i++) {
-      if (trackpoints[i].isOrigin) {
-        let latLng = L.latLng(trackpoints[i].lat, trackpoints[i].lng)
-        let radius = options.radius
-        let point = this._map.latLngToLayerPoint(latLng)
-        this._ctx.beginPath()
-        this._ctx.arc(point.x, point.y, radius, 0, Math.PI * 2, false)
-        this._ctx.globalAlpha = options.opacity
-        if (options.stroke) {
-          this._ctx.strokeStyle = options.color
-          this._ctx.stroke()
-        }
-        if (options.fill) {
-          this._ctx.fillStyle = options.fillColor
-          this._ctx.fill()
-        }
-      }
-    }
-    this._ctx.restore()
-  },
-
-  _drawTrackPointsSvg: function (trackpoints) {
-    for (let i = 0, len = trackpoints.length; i < len; i++) {
-      if (trackpoints[i].isOrigin) {
-        let latLng = L.latLng(trackpoints[i].lat, trackpoints[i].lng)
-        let cricleMarker = L.circleMarker(latLng, this.trackPointOptions)
-        cricleMarker.bindTooltip(this._getTooltipText(trackpoints[i]), this.toolTipOptions)
-        this._trackPointFeatureGroup.addLayer(cricleMarker)
-      }
-    }
-  },
-
-  _drawtxt: function (text, trackpoint) {
-    let point = this._getLayerPoint(trackpoint)
-    this._ctx.save()
-    this._ctx.font = '12px Verdana'
-    this._ctx.fillStyle = '#000'
-    this._ctx.textAlign = 'center'
-    this._ctx.textBaseline = 'bottom'
-    this._ctx.fillText(text, point.x, point.y - 12, 200)
-    this._ctx.restore()
-  },
-
-  _drawShipCanvas: function (trackpoint) {
-    let point = this._getLayerPoint(trackpoint)
-    let rotate = trackpoint.dir || 0
-    let w = this.targetOptions.width
-    let h = this.targetOptions.height
-    let dh = h / 3
-
-    this._ctx.save()
-    this._ctx.fillStyle = this.targetOptions.fillColor
-    this._ctx.strokeStyle = this.targetOptions.color
-    this._ctx.translate(point.x, point.y)
-    this._ctx.rotate((Math.PI / 180) * rotate)
-    this._ctx.beginPath()
-    this._ctx.moveTo(0, 0 - h / 2)
-    this._ctx.lineTo(0 - w / 2, 0 - h / 2 + dh)
-    this._ctx.lineTo(0 - w / 2, 0 + h / 2)
-    this._ctx.lineTo(0 + w / 2, 0 + h / 2)
-    this._ctx.lineTo(0 + w / 2, 0 - h / 2 + dh)
-    this._ctx.closePath()
-    this._ctx.fill()
-    this._ctx.stroke()
-    this._ctx.restore()
-  },
-
-  _drawShipImage: function (trackpoint) {
-    let point = this._getLayerPoint(trackpoint)
-    let dir = trackpoint.dir || 0
-    let width = this.targetOptions.width
-    let height = this.targetOptions.height
-    let offset = {
-      x: width / 2,
-      y: height / 2
-    }
-    this._ctx.save()
-    this._ctx.translate(point.x, point.y)
-    this._ctx.rotate((Math.PI / 180) * dir)
-    this._ctx.drawImage(this._targetImg, 0 - offset.x, 0 - offset.y, width, height)
-    this._ctx.restore()
-  },
-
-  _getTooltipText: function (targetobj) {
-    let content = []
-    content.push('<table>')
-    if (targetobj.info && targetobj.info.length) {
-      for (let i = 0, len = targetobj.info.length; i < len; i++) {
-        content.push('<tr>')
-        content.push('<td>' + targetobj.info[i].key + '</td>')
-        content.push('<td>' + targetobj.info[i].value + '</td>')
-        content.push('</tr>')
-      }
-    }
-    content.push('</table>')
-    content = content.join('')
-    return content
-  },
-
-  // _clearLayer: function () {
-  //   // let bounds = this._trackLayer.getBounds()
-  //   if (bounds) {
-  //     let size = bounds.getSize()
-  //     this._ctx.clearRect(bounds.min.x, bounds.min.y, size.x, size.y)
-  //   } else {
-  //     this._ctx.clearRect(0, 0, this._canvas.width, this._canvas.height)
-  //   }
-  //   if (this._map.hasLayer(this._trackPointFeatureGroup)) {
-  //     this._trackPointFeatureGroup.clearLayers()
-  //   }
-  // },
-
-  _getLayerPoint (trackpoint) {
-    return this._map.latLngToLayerPoint(L.latLng(trackpoint.lat, trackpoint.lng))
   }
 }
 
