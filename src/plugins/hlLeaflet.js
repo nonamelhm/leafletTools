@@ -40,9 +40,11 @@ export default {
   drawLatlng: {},
   trackplay: null,
   trackplaybackControl: null,
-  initMapOptions: {
+  tracklineLayers: [],
+  windCircleLayers: [],
+  initMapOptions: { //初始化配置
     lat: 23.1538555,
-    lon: 113.030911,
+    lng: 113.030911,
     zoom: 4,
     maxZoom: 18,
     minZoom: 3,
@@ -51,6 +53,57 @@ export default {
     zoomControl: false,
     fullscreenControl: false
   },
+  trackplayOptions: {
+    weight: 1,
+    useImg: true,
+    color: '#03ff09',
+    imgUrl: require("@/assets/images/leaflet_icon/trackplay-icon.png"),
+    width: 40,
+    height: 40,
+    unit: `km/h`,
+    replayType: false, // false 多个回放 true 单个回放
+    isDir: 1,// 通用图标才有方向变化
+    wakeTimeDiff: 100,
+    isDrawLine: false,
+    showDistance: false,
+    distanceMarkers: {
+      unit: 'km',
+      showAll: 14,
+      isReverse: false,
+      offset: 10000,
+      cssClass: 'hl-line',
+      iconSize: [20, 20]
+    },
+    opacity: 1
+  },
+  lineOptions: {
+    weight: 1,
+    color: '#3388FF',
+    showDistance: false, // 是否显示里程
+    distanceMarkers: {
+      unit: 'km',
+      showAll: 14,
+      isReverse: false,
+      offset: 10000,
+      cssClass: 'hl-line',
+      iconSize: [20, 20]
+    },
+    opacity: 1
+  },
+  windCircleOptions: {
+    fillColor: '#FF9C00',
+    fillOpacity: 0.3,
+    color: 'transparent',
+    startAngle: 0,  //0是Y轴 顺时针转算度数
+    stopAngle: 360
+  },
+  tipsOptions: {
+    className: 'hl-tips',
+    html: '默认',
+    iconSize: 30,
+    color: 'red'
+  },
+  //轨迹回放配置
   _conf () {
     //start---设置基本图层:空白+天地图+谷歌
     this.nodeRandom = Math.floor(Math.random() * 5) + 3 === 4 ? 6 : Math.floor(Math.random() * 5) + 3;//随机取[3,7]之间整数,t4很容易出问题
@@ -98,14 +151,14 @@ export default {
   },
   _initMap: function (mapId, options) {
     this._conf();
-    let returnedTarget = Object.assign(this.initMapOptions, options);
+    let allOptions = Object.assign(this.initMapOptions, options);
     let defaultLayersNum = parseInt(sessionStorage.getItem('layerIndex'));
     let defalutLabelIndex = isNaN(defaultLayersNum) ? 3 : defaultLayersNum;
     this.map = null;
     let obj = {
-      center: [this.initMapOptions.lat, this.initMapOptions.lon],
+      center: [this.initMapOptions.lat, this.initMapOptions.lng],
       layers: [this.baseLayers[this.tempSortKey[defalutLabelIndex]].tiles], // 默认地图
-      ...returnedTarget
+      ...allOptions
     }
     let reMap = L.map(mapId, {
       ...obj
@@ -116,6 +169,7 @@ export default {
     this.mapControl.zomm.addTo(reMap).setPosition('topright')
     this.mapControl.fullscreen = L.control.fullscreen();
     this.map = reMap
+    this._hlFeatureGroup = L.featureGroup([]).addTo(this.map)
     return this.map;
   },
   _changeLayers (map, idx) {
@@ -123,8 +177,18 @@ export default {
     this.mapControl.layers.addTo(map).setPosition('topright');
     this.mapControl.layers._layerControlInputs[idx].click();
   },
-  _fitBounds: function (map, areaData) {
-    map.fitBounds(areaData)
+  _fitBounds: function (map, areaData, options = { padding: [10, 10], maxZoom: 17 }) {
+    let fitData = [];
+    for (let item of areaData) {
+      if (!Array.isArray(item)) {
+        fitData.push([item.lat, item.lng])
+      } else {
+        for (let p of item) {
+          fitData.push([p.lat, p.lng])
+        }
+      }
+    }
+    map.fitBounds(fitData, options);
   },
   _fitPoint (map, pointData) {
     map.setView(pointData, 16);
@@ -144,7 +208,9 @@ export default {
         }
       });
     } else { //聚合点
-      this.mapControl[layersName] = L.layerGroup()
+      if (!map.hasLayer(this.mapControl[layersName])) {
+        this.mapControl[layersName] = L.layerGroup().addTo(map);
+      }
     }
     this._loadPic(iconUrl).then(() => {
       var icon = L.icon({
@@ -152,7 +218,7 @@ export default {
         iconSize: [25, 41]
       })
       for (var p of list) {
-        this.pointList[p.id] = L.marker(L.latLng(p.lat, p.lon), {
+        this.pointList[p.id] = L.marker(L.latLng(p.lat, p.lng), {
           icon: icon,
           info: p
         }).on('click', function (e) {
@@ -171,51 +237,89 @@ export default {
   },
   _clearLayer (map, layersName) {
     if (map.hasLayer(this.mapControl[layersName])) {
-      this.mapControl[layersName].clearLayers();
+      map.removeLayer(this.mapControl[layersName])
     }
   },
-  _drawByData (map, list, layersName = 'defaultLayers', type, options = { color: '#fc4a14', weight: 2 }) { //画线
-    if (map.hasLayer(this.mapControl[layersName])) {
-      this.mapControl[layersName].clearLayers()
-    } else {
-      this.mapControl[layersName] = L.layerGroup()
+  _drawLineByData (map, data, layersName = 'defaultLineLayers', options = { color: '#fc4a14', weight: 2, showDistance: false }) {
+    let allOptions = Object.assign(this.lineOptions, options);
+    if (!map.hasLayer(this.mapControl[layersName])) {
+      this.mapControl[layersName] = L.layerGroup().addTo(map);
     }
     let latlngs = []
-    //绘制台风需要 L.semiCircle radius需要*1000
-    let radius = 0
-    if (!type.includes('ircle')) {
-      for (var p of list) {
-        latlngs.push([p.lat, p.lon])
-      }
-    } else if (type === 'circle') {
-      latlngs.push(list.lat, list.lon)
-      options.radius = list.radius
-    } else if (type === 'semiCircle') {
-      latlngs.push(list.lat, list.lon)
-      options.radius = list.radius * 1000
+    for (var p of data) {
+      latlngs.push([p.lat, p.lng])
     }
-    switch (type) {
-      case 'polyline':
-        this.drawList = L.polyline(latlngs, options);
-        break;
-      case 'polygon':
-        this.drawList = L.polygon(latlngs, options);
-        break;
-      case 'rectangle':
-        this.drawList = L.rectangle(latlngs, options);
-        break;
-      case 'circle':
-        this.drawList = L.circle(latlngs, options);
-        break;
-      case 'semiCircle':
-        this.drawList = L.semiCircle(latlngs, options);
-        break;
-    }
+    this.drawList = L.polyline(latlngs, allOptions);
     this.mapControl[layersName].addLayer(this.drawList);
     map.addLayer(this.mapControl[layersName]);
+    this._fitBounds(map, data)
+  },
+  _drawTips (map, latlng, contentHtml, layersName = 'defaultTipsLayers', options) {
+    if (!map.hasLayer(this.mapControl[layersName])) {
+      this.mapControl[layersName] = L.layerGroup().addTo(map);
+    }
+    let allOptions = Object.assign(this.tipsOptions, options);
+    // 有内容介绍的线
+    if (contentHtml) {
+      let myIcon = L.divIcon(allOptions)
+      let lineTips = L.marker([latlng.lat, latlng.lng], {
+        icon: myIcon,
+        ...allOptions
+      })
+      this.mapControl[layersName].addLayer(lineTips);
+    }
+    map.addLayer(this.mapControl[layersName]);
+  },
+  _drawByData (map, data, layersName = 'defaultLayers', type, options = { color: '#fc4a14', weight: 2 }) { //画线
+    if (!map.hasLayer(this.mapControl[layersName])) {
+      this.mapControl[layersName] = L.layerGroup().addTo(map);
+    }
+    let latlngs = []
+    if (!type.includes('circle')) {
+      data.forEach((p, i) => {
+        if (!Array.isArray(p)) {
+          latlngs.push([p.lat, p.lng]);
+          if (type === 'polygon') {
+            this.drawList[i] = L.polygon(latlngs, options);
+          } else if (type === 'rectangle') {
+            this.drawList[i] = L.rectangle(latlngs, options);
+          }
+        } else {
+          let temArr = []
+          for (let item of p) {
+            temArr.push([item.lat, item.lng]);
+          }
+          if (type === 'polygon') {
+            this.drawList[i] = L.polygon(temArr, options);
+          } else if (type === 'rectangle') {
+            this.drawList[i] = L.rectangle(temArr, options);
+          }
+        }
+        this.mapControl[layersName].addLayer(this.drawList[i]);
+      })
+    } else {
+      data.forEach((p, i) => {
+        if (!Array.isArray(p)) {
+          let circlelatlngs = [];
+          circlelatlngs.push(p.lat, p.lng);
+          options.radius = p.radius;
+          this.drawList[i] = L.circle(circlelatlngs, options);
+          this.mapControl[layersName].addLayer(this.drawList[i]);
+        }
+      })
+    }
+    map.addLayer(this.mapControl[layersName]);
+    this._fitBounds(map, data);
   },
   _measure (map) {
     L.control.polylineMeasure({
+      unitControlTitle: {
+        // Title texts to show on the Unit Control button
+        text: 'Change Units',
+        metres: 'metres',
+        landmiles: 'land miles',
+        nauticalmiles: 'nautical miles'
+      },
       position: 'topleft',
       unit: 'kilometres', //最小单位
       showBearings: true,
@@ -224,8 +328,11 @@ export default {
       showUnitControl: true,
       bearingTextIn: '起点',
       bearingTextOut: '终点',
-      tooltipTextFinish: '单击并<b>拖动到移动点</b><br>',
-      tooltipTextDelete: '<b>按shift键，然后单击删除</b>',
+      tooltipTextFinish: '<b>单击并<b>拖动到移动点</b><br>',
+      tooltipTextDelete: '按shift键，然后<b>单击删除</b>',
+      tooltipTextMove: '单击然后拖动<b>即可移动</b><br>',
+      tooltipTextAdd: '按ctrl键或单击<b>添加点</b>',
+      tooltipTextResume: '<br>按ctrl键并单击<b>重新开始</b>',
       unitControlLabel: {
         metres: '米',
         kilometres: '千米',
@@ -348,10 +455,8 @@ export default {
   },
   _editMarkerGetData (map, iconUrl = require("@/assets/images/leaflet_icon/position-icon.png"), imgWidth = 20, imgHeight = 20, layersName = 'editingMarker') {
     this._clearAllEdit(map);
-    if (map.hasLayer(this.mapControl[layersName])) {
-      this.mapControl[layersName].clearLayers()
-    } else {
-      this.mapControl[layersName] = L.layerGroup()
+    if (!map.hasLayer(this.mapControl[layersName])) {
+      this.mapControl[layersName] = L.layerGroup().addTo(map);
     }
     let iconSize = [imgWidth, imgHeight];
     let myIcon = L.icon({
@@ -378,10 +483,8 @@ export default {
   },
   _editMapGetData (map, type = 0, color = 'rgba(51, 136, 255, 1)', layersName = 'editingLayers') {
     this._clearAllEdit(map);
-    if (map.hasLayer(this.mapControl[layersName])) {
-      this.mapControl[layersName].clearLayers()
-    } else {
-      this.mapControl[layersName] = L.layerGroup()
+    if (!map.hasLayer(this.mapControl[layersName])) {
+      this.mapControl[layersName] = L.layerGroup().addTo(map);
     }
     let chooseDraw = 'Polygon';//默认多边形
     let drawType = {
@@ -448,16 +551,66 @@ export default {
     })
 
   },
-  _drawHeatMap (map, data, options = { radius: 10, minOpacity: 0.85 }) {
+  _drawHeatMap (map, data, layersName = 'hotLayers', options = { radius: 10, minOpacity: 0.85 }) {
+    if (!map.hasLayer(this.mapControl[layersName])) {
+      this.mapControl[layersName] = L.layerGroup().addTo(map);
+    }
     let heatPoints = [];
     data.forEach(item => {
       heatPoints.push([item.lat, item.lng, item.count]);
     })
-    L.heatLayer(heatPoints, options).addTo(map);
+    let hotLayers = L.heatLayer(heatPoints, options);
+    this.mapControl[layersName].addLayer(hotLayers);
+    map.addLayer(this.mapControl[layersName]);
   },
   _fullScreen (map) {
     this.mapControl.fullscreen.addTo(map).setPosition('topright');
     this.mapControl.fullscreen.link.click();
+  },
+  _drawWindCircle (map, data, options) {
+    let allWindOptions = Object.assign(this.windCircleOptions, options)
+    // 转换数据成角度画圆
+    let arr = []
+    for (let p of data) {
+      if (!Array.isArray(p)) { //一个台风数据
+        this._windCircle(map, data, allWindOptions);
+      } else { //多个台风数据
+        for (let pp of p) {
+          this._windCircle(map, p, allWindOptions);
+        }
+      }
+    }
+    this._fitBounds(map, data, {
+      padding: [10, 10],
+      maxZoom: 17
+    });
+  },
+  _windCircle (map, data, allWindOptions) {
+    for (let p of data) {   //绘制台风需要 L.semiCircle radius需要*1000 插件
+      if (p.neRadius) {
+        allWindOptions = Object.assign(allWindOptions, { startAngle: 0, stopAngle: 90 })
+        this.windCircleLayers.push(L.semiCircle([p.lat, p.lng], { radius: p.neRadius * 1000, ...allWindOptions }).addTo(map));
+      }
+      if (p.seRadius) {
+        allWindOptions = Object.assign(allWindOptions, { startAngle: 90, stopAngle: 180 })
+        this.windCircleLayers.push(L.semiCircle([p.lat, p.lng], { radius: p.seRadius * 1000, ...allWindOptions }).addTo(map));
+      }
+      if (p.swRadius) {
+        allWindOptions = Object.assign(allWindOptions, { startAngle: 180, stopAngle: 270 })
+        this.windCircleLayers.push(L.semiCircle([p.lat, p.lng], { radius: p.swRadius * 1000, ...allWindOptions }).addTo(map));
+      }
+      if (p.nwRadius) {
+        allWindOptions = Object.assign(allWindOptions, { startAngle: 270, stopAngle: 360 })
+        this.windCircleLayers.push(L.semiCircle([p.lat, p.lng], { radius: p.nwRadius * 1000, ...allWindOptions }).addTo(map));
+      }
+    }
+  },
+  _clearWindCircle (map) {
+    this.windCircleLayers.forEach(e => {
+      if (map.hasLayer(e)) {
+        map.removeLayer(e);
+      }
+    })
   },
   _zoomAdd (map) {
     map.zoomIn();
@@ -465,49 +618,70 @@ export default {
   _zoomSub (map) {
     map.zoomOut();
   },
-  _trackPlay (map, data, color = '#03ff09', imgUrl = require("@/assets/images/leaflet_icon/trackplay-icon.png"), width = 40, height = 40, unit = `km/h`, wakeTimeDiff = 100) { //轨迹回放
+  _trackPlay (map, data, options, manyLineColor = ['red', 'bule', 'yellow', 'orange', 'pink']) { //轨迹回放 lineColor多轨迹线条颜色
     let _this = this;
-    this._loadPic(imgUrl).then(() => {
+    let allTargetOptions = Object.assign(this.trackplayOptions, options);
+    this._loadPic(allTargetOptions.imgUrl).then(() => {
+      // 画出轨迹的起点终点停止点 判断数据是单轨迹还是多轨迹
+      _this.tracklineLayers = [];
+      data.forEach((item, index) => {
+        if (!Array.isArray(item)) { //单轨迹画出轨迹  显示里程
+          let latlngs = []
+          for (var p of data) {
+            latlngs.push([p.lat, p.lng])
+          }
+          _this.tracklineLayers.push(L.polyline(latlngs, allTargetOptions).addTo(map));
+        } else { //多轨迹画出轨迹  不显示里程
+          let latlngs = []
+          for (var p of item) {
+            latlngs.push([p.lat, p.lng])
+          }
+          _this.tracklineLayers.push(L.polyline(latlngs, { color: manyLineColor[index] ? manyLineColor[index] : 'green', ...allTargetOptions }).addTo(map));
+        }
+      })
       _this.trackplay = L.trackplayback(data, map, {
-        targetOptions: {
-          useImg: true,
-          imgUrl,
-          width,
-          height,
-          unit,
-          replayType: false, // false 多个回放 true 单个回放
-          isDir: 1 // 通用图标才有方向变化
-        },
+        targetOptions: { ...allTargetOptions },
         trackLineOptions: {
-          isDraw: true, // 是否画线
+          isDraw: allTargetOptions.isDrawLine, // 是否画线
           stroke: true,
-          color, // 线条颜色
+          color: allTargetOptions.color, // 线条颜色
           weight: 2, // 线条宽度
           opacity: 1, // 透明度
-          wakeTimeDiff// 尾迹时间控制 不传默认一年
+          wakeTimeDiff: allTargetOptions.wakeTimeDiff// 尾迹时间控制 不传默认一年
         }
       })
       _this.trackplaybackControl = L.trackplaybackcontrol(_this.trackplay);
       _this.trackplaybackControl.addTo(map);
-      _this._drawTrack();
     })
   },
-  _drawTrack (isDrawLine = true) {//默认绘制路线
-    document.querySelectorAll('.trackplayback-input')[1].checked = isDrawLine;  // 画线
-    document.querySelector(".buttonContainer .btn-stop").click(); //开始预览
+  _startTrack (isDrawLine = false) {//默认绘制路线
+    setTimeout(() => {
+      document.querySelectorAll('.trackplayback-input')[1].checked = isDrawLine;  // 画线
+      document.querySelector(".buttonContainer .btn-stop").click(); //开始预览
+    }, 100)
   },
   _setTrackSpeed (speed) {//设置速度
-
     this.trackplay.setSpeed(speed);
   },
-  _clearTrackBack () {//清除
-    document.querySelector(".buttonContainer .btn-close").click(); //删除轨迹
+  _clearTrackBack (map) {//清除
+    this.tracklineLayers.forEach((e) => { //清除线条
+      if (map.hasLayer(e)) {
+        map.removeLayer(e);
+      }
+    })
+    if (document.querySelector(".buttonContainer .btn-close")) {
+      document.querySelector(".buttonContainer .btn-close").click(); //删除轨迹
+    }
   },
   _restartTrack () {//刷新
-    document.querySelector(".buttonContainer .btn-restart").click(); //重新开始
+    if (document.querySelector(".buttonContainer .btn-restart")) {
+      document.querySelector(".buttonContainer .btn-restart").click(); //重新开始
+    }
   },
   _quitTrack () { //暂停
-    document.querySelector(".buttonContainer .btn-start").click(); //重新开始
+    if (document.querySelector(".buttonContainer .btn-start")) {
+      document.querySelector(".buttonContainer .btn-start").click(); //重新开始
+    }
   },
   _clearAllEdit (map) {
     map.pm.disableDraw('Line')
@@ -521,7 +695,11 @@ export default {
       var img = new Image()
       img.onload = pass()
       img.onerrof = fall()
-      img.src = require(`${url}`) // 解决依赖代码不支持变量，需要转模板模式
+      if (url.includes('http')) {
+        img.src = url;
+      } else {
+        img.src = require(`${url}`) // 解决依赖代码不支持变量，需要转模板模式
+      }
     })
   }
 }

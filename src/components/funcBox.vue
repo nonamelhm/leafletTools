@@ -10,7 +10,7 @@
       <li @click="mearsure()">测量距离</li>
       <li @click="area()">测量面积</li>
       <!-- <li @click="draw('marker')">{{ isDrawing ? '取消地图绘点' : '地图绘点' }}</li> -->
-      <li @click="hotMap()">热力图</li>
+      <li @click="hotMap()">{{ isHot ? '清除热力图' : '绘制热力图' }}</li>
       <li @click="changeLayers(1)">切换天地图卫星图</li>
       <li @click="changeLayers(2)">切换天地图地形图</li>
       <li @click="changeLayers(3)">切换天地图街道图</li>
@@ -42,6 +42,7 @@
     data () {
       return {
         hl: null,
+        isHot: false,
         isTrackBack: false,
         isEditPolygon: false,
         isEditCircle: false,
@@ -72,10 +73,10 @@
         this.isPoint = !this.isPoint
         if (this.isPoint) {
           // 显示内容提前封装在msg中
-          let list = [{ lat: 24, lon: 110, id: 1, showMsg: `显示内容1-24-110` }, { lat: 22, lon: 110, id: 3, showMsg: `显示内容2-24-110` }]
+          let list = [{ lat: 24, lng: 110, id: 1, showMsg: `显示内容1-24-110` }, { lat: 22, lng: 110, id: 3, showMsg: `显示内容2-24-110` }]
           hl._renderPoint(this.map, list, 'layers1', require("@/assets/images/leaflet_icon/marker-icon-2x.png"), true)
-          hl._renderPoint(this.map, [{ lat: 25, lon: 110, id: 2, showMsg: `显示内容2-25-110` }], 'layers2')
-          hl._renderPoint(this.map, [{ lat: 26, lon: 110, id: 2, showMsg: `显示内容2-26-110` }], 'layers2')
+          hl._renderPoint(this.map, [{ lat: 25, lng: 110, id: 2, showMsg: `显示内容2-25-110` }], 'layers2')
+          hl._renderPoint(this.map, [{ lat: 26, lng: 110, id: 2, showMsg: `显示内容2-26-110` }], 'layers2')
         } else {
           hl._clearLayer(this.map, 'layers1')
           hl._clearLayer(this.map, 'layers2')
@@ -84,52 +85,42 @@
       polyline () {
         this.isPolyline = !this.isPolyline
         if (this.isPolyline) {
-          let list = [{ lat: 24, lon: 110 }, { lat: 32, lon: 112 }, { lat: 21, lon: 113 }]
-          hl._drawByData(this.map, list, 'polyline', 'polyline', { color: 'blue', weight: 1 })
+          let list = [{ lat: 24, lng: 110 }, { lat: 32, lng: 112 }, { lat: 21, lng: 113 }]
+          hl._drawLineByData(this.map, list, 'polyline', { color: 'blue', weight: 1, showDistance: true }, '24</br>小</br>时</br>警</br>戒</br>线')
+          let list2 = [{ lat: 25, lng: 111 }, { lat: 30, lng: 102 }, { lat: 24, lng: 113 }]
+          hl._drawLineByData(this.map, list2, 'polyline2', { color: 'red', weight: 1, showDistance: true }, 'test')
+          hl._drawTips(this.map, { lat: 24, lng: 110 }, 'test', 'polyline');
         } else {
-          hl._clearLayer(this.map, 'polyline')
+          hl._clearLayer(this.map, 'polyline');
+          hl._clearLayer(this.map, 'polyline2');
+          hl._clearLayer(this.map, 'tips');
         }
       },
       polygon () {
         this.isPolygon = !this.isPolygon
-        let list = [[{ lat: 24, lon: 110 }, { lat: 22, lon: 110 }, { lat: 32, lon: 112 }, { lat: 25, lon: 14 }], [{ lat: 19, lon: 10 }, { lat: 12, lon: 80 }, { lat: 2, lon: 22 }, { lat: 5, lon: 14 }]]
+        let list = [[{ lat: 24, lng: 110 }, { lat: 22, lng: 110 }, { lat: 32, lng: 112 }, { lat: 25, lng: 14 }], [{ lat: 19, lng: 10 }, { lat: 12, lng: 80 }, { lat: 2, lng: 22 }, { lat: 5, lng: 14 }]]
         if (this.isPolygon) {
-          list.forEach((p, i) => {
-            hl._drawByData(this.map, p, `polygon${i}`, 'polygon', { color: 'green', weight: 1 })
-          })
+          hl._drawByData(this.map, list, `polygon`, 'polygon', { color: 'green', weight: 1 })
         } else {
-          for (var i in list) {
-            hl._clearLayer(this.map, `polygon${i}`)
-          }
+          hl._clearLayer(this.map, `polygon`)
         }
       },
       rectangle () {
         this.isRectangle = !this.isRectangle
-        let list = [[{ lat: 24, lon: 110, id: 1 }, { lat: 24, lon: 121, id: 2 }, { lat: 30, lon: 121, id: 3 }, { lat: 30, lon: 110, id: 4 }], [{ lat: 14, lon: 90, id: 5 }, { lat: 14, lon: 100, id: 6 }, { lat: 20, lon: 90, id: 7 }, { lat: 20, lon: 100, id: 8 }]]
+        let list = [[{ lat: 24, lng: 110, id: 1 }, { lat: 24, lng: 121, id: 2 }, { lat: 30, lng: 121, id: 3 }, { lat: 30, lng: 110, id: 4 }], [{ lat: 14, lng: 90, id: 5 }, { lat: 14, lng: 100, id: 6 }, { lat: 20, lng: 90, id: 7 }, { lat: 20, lng: 100, id: 8 }]]
         if (this.isRectangle) {
-          list.forEach((p, i) => {
-            hl._drawByData(this.map, p, `rectangle${i}`, 'rectangle', { color: 'blue', weight: 1 })
-          })
+          hl._drawByData(this.map, list, `rectangle`, 'rectangle', { color: 'blue', weight: 1 })
         } else {
-          for (var i in list) {
-            hl._clearLayer(this.map, `rectangle${i}`)
-          }
+          hl._clearLayer(this.map, `rectangle`)
         }
       },
       circle () {
         this.isCircle = !this.isCircle
-        let list = [{ lat: 24, lon: 110, radius: 20000 }, { lat: 25, lon: 120, radius: 60000 }]
-        let areaData = []
+        let list = [{ lat: 24, lng: 110, radius: 20000 }, { lat: 25, lng: 120, radius: 60000 }]
         if (this.isCircle) {
-          list.forEach((p, i) => {
-            hl._drawByData(this.map, p, `circle${i}`, 'circle', { color: 'red', weight: 1 })
-            areaData.push([p.lat, p.lon])
-          })
-          hl._fitBounds(this.map, areaData) //适当放大
+          hl._drawByData(this.map, list, `circle`, 'circle', { color: 'red', weight: 1 });
         } else {
-          for (var i in list) {
-            hl._clearLayer(this.map, `circle${i}`)
-          }
+          hl._clearLayer(this.map, `circle`);
         }
       },
       fullScreen () {
@@ -144,24 +135,11 @@
       },
       angleCircle () {
         this.isAngleCircle = !this.isAngleCircle
-        let list = [{ lat: 25, lon: 110, seRadius: 200, neRadius: 250, swRadius: 180, nwRadius: 170 }, { lat: 15, lon: 100, seRadius: 100, neRadius: 220, swRadius: 130, nwRadius: 140 }]
-        // 转换数据成角度画圆
-        let arr = []
-        for (var p of list) {
-          arr.push({ lat: p.lat, lon: p.lon, radius: p.neRadius, startAngle: 0, stopAngle: 90 })
-          arr.push({ lat: p.lat, lon: p.lon, radius: p.seRadius, startAngle: 90, stopAngle: 180 })
-          arr.push({ lat: p.lat, lon: p.lon, radius: p.swRadius, startAngle: 180, stopAngle: 270 })
-          arr.push({ lat: p.lat, lon: p.lon, radius: p.nwRadius, startAngle: 270, stopAngle: 360 })
-        }
-
+        let list = [{ lat: 25, lng: 110, seRadius: 200, neRadius: 250, swRadius: 180, nwRadius: 170 }, { lat: 15, lng: 100, seRadius: 100, neRadius: 220, swRadius: 130, nwRadius: 140 }]
         if (this.isAngleCircle) {
-          arr.forEach((p, i) => {
-            hl._drawByData(this.map, p, `semiCircle${i}`, 'semiCircle', { fillColor: '#FF9C00', fillOpacity: 0.3, color: 'transparent', startAngle: p.startAngle, stopAngle: p.stopAngle })
-          })
+          hl._drawWindCircle(this.map, list);
         } else {
-          for (var i in arr) {
-            hl._clearLayer(this.map, `semiCircle${i}`)
-          }
+          hl._clearWindCircle(this.map)
         }
       },
       mearsure () {
@@ -197,7 +175,13 @@
           lng: 119.69847,
           count: 19
         }]
-        hl._drawHeatMap(this.map, data);
+        this.isHot = !this.isHot;
+        if (this.isHot) {
+          hl._drawHeatMap(this.map, data, 'hot');
+        } else {
+          hl._clearLayer(this.map, 'hot');
+        }
+
       },
       edit (type) {
         if (type === 0) { //多边形
@@ -235,15 +219,16 @@
       trackBack () {
         this.isTrackBack = !this.isTrackBack;
         if (this.isTrackBack) {
-          hl._trackPlay(this.map, testData);
+          hl._trackPlay(this.map, testData, { isDrawLine: false });
+          hl._startTrack();
         } else {//  清除轨迹
-          hl._clearTrackBack();
+          hl._clearTrackBack(this.map);
         }
       },
       quitTrack () {
         this.isStop = !this.isStop;
         if (this.isStop) { hl._quitTrack(); } else {
-          hl._drawTrack();
+          hl._startTrack();
         }
       },
       setSpeed (speed) {
