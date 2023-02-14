@@ -118,16 +118,19 @@
       },
       rectangle () {
         this.isRectangle = !this.isRectangle
-        let list = [[{ lat: 24, lng: 110, id: 1 }, { lat: 24, lng: 121, id: 2 }, { lat: 30, lng: 121, id: 3 }, { lat: 30, lng: 110, id: 4 }], [{ lat: 14, lng: 90, id: 5 }, { lat: 14, lng: 100, id: 6 }, { lat: 20, lng: 90, id: 7 }, { lat: 20, lng: 100, id: 8 }]]
+        let list = [[{ lat: 24, lng: 110, showMsg: 'hello-rectangle' }, { lat: 24, lng: 121 }, { lat: 30, lng: 121, id: 3 }, { lat: 30, lng: 110, id: 4 }], [{ lat: 14, lng: 90, id: 5, showMsg: 'hi-rectangle' }, { lat: 14, lng: 100, id: 6 }, { lat: 20, lng: 90, id: 7 }, { lat: 20, lng: 100, id: 8 }]]
+        let list2 = [{ lat: 26, lng: 130, showMsg: 'hello222-rectangle' }, { lat: 26, lng: 121 }, { lat: 30, lng: 130 }, { lat: 30, lng: 121 }];
         if (this.isRectangle) {
           hl._drawByData(this.map, list, `rectangle`, 'rectangle', { color: 'blue', weight: 1 })
+          hl._drawByData(this.map, list2, `rectangle`, 'rectangle', { color: 'red', weight: 1 })
+
         } else {
           hl._clearLayer(this.map, `rectangle`)
         }
       },
       circle () {
         this.isCircle = !this.isCircle
-        let list = [{ lat: 24, lng: 110, radius: 20000 }, { lat: 25, lng: 120, radius: 60000 }]
+        let list = [{ lat: 24, lng: 110, radius: 20000, showMsg: 'circle1' }, { lat: 25, lng: 120, radius: 60000, showMsg: 'circle2' }]
         if (this.isCircle) {
           hl._drawByData(this.map, list, `circle`, 'circle', { color: 'red', weight: 1 });
         } else {

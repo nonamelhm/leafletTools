@@ -248,7 +248,8 @@ export default {
   },
   _clearLayer (map, layersName) {
     if (map.hasLayer(this.mapControl[layersName])) {
-      map.removeLayer(this.mapControl[layersName])
+      map.removeLayer(this.mapControl[layersName]);
+      map.closePopup();
     }
   },
   _drawLineByData (map, data, layersName = 'defaultLineLayers', options = { color: '#fc4a14', weight: 2, showDistance: false }) {
@@ -291,18 +292,11 @@ export default {
         if (!Array.isArray(p)) {
           latlngs.push([p.lat, p.lng]);
           if (type === 'polygon') {
-            this.drawList[i] = L.polygon(latlngs, { ...allOptions, info: p }).on('click', function (e) {
-              console.log(e, 'click')
-              let info = e.sourceTarget.options.info;
-              if (info.showMsg) {
-                L.popup({ offset: [0, 0], className: 'hlleaflet-marker-popup' })
-                  .setLatLng([e.sourceTarget._latlng.lat, e.sourceTarget._latlng.lng])
-                  .setContent(`${info.showMsg}`)
-                  .openOn(map);
-              }
-            })
+            this.drawList[i] = L.polygon(latlngs, { ...allOptions, info: data });
+            this._addTipInPattern(map, this.drawList[i]);
           } else if (type === 'rectangle') {
-            this.drawList[i] = L.rectangle(latlngs, allOptions);
+            this.drawList[i] = L.rectangle(latlngs, { ...allOptions, info: data });
+            this._addTipInPattern(map, this.drawList[i]);
           }
         } else {
           let temArr = []
@@ -310,19 +304,11 @@ export default {
             temArr.push([item.lat, item.lng]);
           }
           if (type === 'polygon') {
-            this.drawList[i] = L.polygon(temArr, { ...allOptions, info: p }).on('click', function (e) {
-              console.log(e, 'click')
-              let info = e.sourceTarget.options.info;
-              console.log(info[0])
-              if (info[0].showMsg) {
-                L.popup({ offset: [0, 0], className: 'hlleaflet-pattern-popup' })
-                  .setLatLng([e.sourceTarget._latlngs[0].lat, e.sourceTarget._latlngs[0].lng])
-                  .setContent(`${info[0].showMsg}`)
-                  .openOn(map);
-              }
-            })
+            this.drawList[i] = L.polygon(temArr, { ...allOptions, info: p });
+            this._addTipInPattern(map, this.drawList[i]);
           } else if (type === 'rectangle') {
-            this.drawList[i] = L.rectangle(temArr, options);
+            this.drawList[i] = L.rectangle(temArr, { ...allOptions, info: p });
+            this._addTipInPattern(map, this.drawList[i]);
           }
         }
         this.mapControl[layersName].addLayer(this.drawList[i]);
@@ -333,13 +319,31 @@ export default {
           let circlelatlngs = [];
           circlelatlngs.push(p.lat, p.lng);
           options.radius = p.radius;
-          this.drawList[i] = L.circle(circlelatlngs, options);
+          this.drawList[i] = L.circle(circlelatlngs, { ...options, info: p });
+          this._addTipInPattern(map, this.drawList[i]);
           this.mapControl[layersName].addLayer(this.drawList[i]);
         }
       })
     }
     map.addLayer(this.mapControl[layersName]);
     this._fitBounds(map, data);
+  },
+  _addTipInPattern (map, layers) {
+    layers.on('click', function (e) {
+      let info = e.sourceTarget.options.info;
+      let content = '';
+      if (!e.sourceTarget._radius) { //区别圆形数据
+        content = info[0].showMsg;
+      } else if (info && info.showMsg) {
+        content = info.showMsg;
+      }
+      if (content) {
+        L.popup({ offset: [0, 0], className: 'hlleaflet-pattern-popup' })
+          .setLatLng([e.latlng.lat, e.latlng.lng])
+          .setContent(`${content}`)
+          .openOn(map);
+      }
+    })
   },
   _measure (map) {
     L.control.polylineMeasure({

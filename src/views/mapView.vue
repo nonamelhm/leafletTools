@@ -19,7 +19,7 @@
       //鼠标移动位置
       if (this.map) {
         this.map.on('mousemove', e => {
-          console.log('当前经纬度', e.latlng)
+          // console.log('当前经纬度', e.latlng)
         });
       }
     },
