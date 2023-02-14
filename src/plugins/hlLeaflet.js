@@ -197,11 +197,13 @@ export default {
     this._currentLatlng = e.latlng;
   },
   _changeLayers (map, idx) {
+    if (!map) return;
     this.mapControl.layers = L.control.layers(this.tempSetting);
     this.mapControl.layers.addTo(map).setPosition('topright');
     this.mapControl.layers._layerControlInputs[idx].click();
   },
-  _fitBounds: function (map, areaData, options = { padding: [10, 10], maxZoom: 17 }) {
+  _fitBounds (map, areaData, options = { padding: [10, 10], maxZoom: 17 }) {
+    if (!map) return;
     let fitData = [];
     for (let item of areaData) {
       if (!Array.isArray(item)) {
@@ -215,9 +217,11 @@ export default {
     map.fitBounds(fitData, options);
   },
   _fitPoint (map, pointData) {
+    if (!map) return;
     map.setView(pointData, 16);
   },
   _renderPoint (map, data, layersName = 'defaultPointLayers', options = {}, clusterFlag = false) {
+    if (!map) return;
     let allOptions = Object.assign(this.pointOptions, options);
     if (clusterFlag) {
       this.mapControl[layersName] = L.markerClusterGroup(allOptions);
@@ -247,12 +251,14 @@ export default {
     })
   },
   _clearLayer (map, layersName) {
+    if (!map) return;
     if (map.hasLayer(this.mapControl[layersName])) {
       map.removeLayer(this.mapControl[layersName]);
       map.closePopup();
     }
   },
   _drawLineByData (map, data, layersName = 'defaultLineLayers', options = { color: '#fc4a14', weight: 2, showDistance: false }) {
+    if (!map) return;
     let allOptions = Object.assign(this.lineOptions, options);
     if (!map.hasLayer(this.mapControl[layersName])) {
       this.mapControl[layersName] = L.layerGroup().addTo(map);
@@ -267,6 +273,7 @@ export default {
     this._fitBounds(map, data)
   },
   _drawTips (map, latlng, layersName = 'defaultTipsLayers', options) {
+    if (!map) return;
     if (!map.hasLayer(this.mapControl[layersName])) {
       this.mapControl[layersName] = L.layerGroup().addTo(map);
     }
@@ -282,6 +289,7 @@ export default {
     map.addLayer(this.mapControl[layersName]);
   },
   _drawByData (map, data, layersName = 'defaultLayers', type, options) {
+    if (!map) return;
     if (!map.hasLayer(this.mapControl[layersName])) {
       this.mapControl[layersName] = L.layerGroup().addTo(map);
     }
@@ -329,6 +337,7 @@ export default {
     this._fitBounds(map, data);
   },
   _addTipInPattern (map, layers) {
+    if (!map) return;
     layers.on('click', function (e) {
       let info = e.sourceTarget.options.info;
       let content = '';
@@ -346,6 +355,7 @@ export default {
     })
   },
   _measure (map) {
+    if (!map) return;
     L.control.polylineMeasure({
       unitControlTitle: {
         // Title texts to show on the Unit Control button
@@ -394,6 +404,7 @@ export default {
     }
   },
   _mearsureArea (map) {
+    if (!map) return;
     // 继承测面积插件的_handleMeasureDoubleClick方法，改写弹窗内容
     let newMeasureRules = L.Control.Measure.extend({
       _handleMeasureDoubleClick: function () {
@@ -491,6 +502,7 @@ export default {
     document.querySelector(".js-start").click();
   },
   _drawInMap (map, type, iconSize = [20, 20], iconUrl = require('@/assets/images/leaflet_icon/position-icon.png')) { //绘制在地图上
+    if (!map) return;
     switch (type) {
       case 'marker':
         let myIcon = L.icon({
@@ -503,16 +515,16 @@ export default {
       case '':
     }
   },
-  _editMarkerGetData (map, iconUrl = require("@/assets/images/leaflet_icon/position-icon.png"), imgWidth = 20, imgHeight = 20, layersName = 'editingMarker') {
+  _editMarkerGetData (map, iconUrl = require("@/assets/images/leaflet_icon/position-icon.png"), iconSize = [20, 20], layersName = 'editingMarker') {
+    if (!map) return;
     this._clearAllEdit(map);
     // map.off('mousemove', this._onmousemoveEvt, this);
     if (!map.hasLayer(this.mapControl[layersName])) {
       this.mapControl[layersName] = L.layerGroup().addTo(map);
     }
-    let iconSize = [imgWidth, imgHeight];
     let myIcon = L.icon({
       iconUrl: iconUrl,
-      iconSize: iconSize,
+      iconSize,
       iconAnchor: iconSize
     })
     map.pm.enableDraw('Marker', {
@@ -533,6 +545,7 @@ export default {
     })
   },
   _editMapGetData (map, type = 0, color = 'rgba(51, 136, 255, 1)', layersName = 'editingLayers') {
+    if (!map) return;
     this._clearAllEdit(map);
     // map.off('mousemove', this._onmousemoveEvt, this);
     if (!map.hasLayer(this.mapControl[layersName])) {
@@ -600,6 +613,7 @@ export default {
       })
   },
   _drawHeatMap (map, data, layersName = 'hotLayers', options = { radius: 10, minOpacity: 0.85 }) {
+    if (!map) return;
     if (!map.hasLayer(this.mapControl[layersName])) {
       this.mapControl[layersName] = L.layerGroup().addTo(map);
     }
@@ -612,10 +626,12 @@ export default {
     map.addLayer(this.mapControl[layersName]);
   },
   _fullScreen (map) {
+    if (!map) return;
     this.mapControl.fullscreen.addTo(map).setPosition('topright');
     this.mapControl.fullscreen.link.click();
   },
   _drawWindCircle (map, data, options) {
+    if (!map) return;
     let allWindOptions = Object.assign(this.windCircleOptions, options)
     // 转换数据成角度画圆
     let arr = []
@@ -634,6 +650,7 @@ export default {
     });
   },
   _windCircle (map, data, allWindOptions) {
+    if (!map) return;
     for (let p of data) {   //绘制台风需要 L.semiCircle radius需要*1000 插件
       if (p.neRadius) {
         allWindOptions = Object.assign(allWindOptions, { startAngle: 0, stopAngle: 90 })
@@ -654,6 +671,7 @@ export default {
     }
   },
   _clearWindCircle (map) {
+    if (!map) return;
     this.windCircleLayers.forEach(e => {
       if (map.hasLayer(e)) {
         map.removeLayer(e);
@@ -661,12 +679,15 @@ export default {
     })
   },
   _zoomAdd (map) {
+    if (!map) return;
     map.zoomIn();
   },
   _zoomSub (map) {
+    if (!map) return;
     map.zoomOut();
   },
   _trackPlay (map, data, options, manyLineColor = ['red', 'bule', 'yellow', 'orange', 'pink']) { //轨迹回放 lineColor多轨迹线条颜色
+    if (!map) return;
     let _this = this;
     let allTargetOptions = Object.assign(this.trackplayOptions, options);
     this._loadPic(allTargetOptions.imgUrl).then(() => {
@@ -702,16 +723,18 @@ export default {
       _this.trackplaybackControl.addTo(map);
     })
   },
-  _startTrack (isDrawLine = false) {//默认绘制路线
+  _startTrack () {//默认绘制路线
     setTimeout(() => {
-      document.querySelectorAll('.trackplayback-input')[1].checked = isDrawLine;  // 画线
-      document.querySelector(".buttonContainer .btn-stop").click(); //开始预览
+      // document.querySelectorAll('.trackplayback-input')[1].checked = isDrawLine;  // 画线
+      let btn = document.querySelectorAll(".buttonContainer .btn-stop")[0];
+      if (btn) btn.click();//开始预览
     }, 100)
   },
   _setTrackSpeed (speed) {//设置速度
     this.trackplay.setSpeed(speed);
   },
   _clearTrackBack (map) {//清除
+    if (!map) return;
     this.tracklineLayers.forEach((e) => { //清除线条
       if (map.hasLayer(e)) {
         map.removeLayer(e);
@@ -732,6 +755,7 @@ export default {
     }
   },
   _clearAllEdit (map) {
+    if (!map) return;
     map.pm.disableDraw('Line')
     map.pm.disableDraw('Marker')
     map.pm.disableDraw('Polygon')

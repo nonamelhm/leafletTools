@@ -97,9 +97,9 @@
         this.isPolyline = !this.isPolyline
         if (this.isPolyline) {
           let list = [{ lat: 24, lng: 110 }, { lat: 32, lng: 112 }, { lat: 21, lng: 113 }]
-          hl._drawLineByData(this.map, list, 'polyline', { color: 'blue', weight: 1, showDistance: true }, '24</br>小</br>时</br>警</br>戒</br>线')
+          hl._drawLineByData(this.map, list, 'polyline', { color: 'blue', weight: 1, showDistance: true })
           let list2 = [{ lat: 25, lng: 111 }, { lat: 30, lng: 102 }, { lat: 24, lng: 113 }]
-          hl._drawLineByData(this.map, list2, 'polyline2', { color: 'red', weight: 1, showDistance: true }, 'test')
+          hl._drawLineByData(this.map, list2, 'polyline2', { color: 'red', weight: 1, showDistance: true })
           hl._drawTips(this.map, { lat: 24, lng: 110 }, 'tips', { html: 'hello-hhh' });
         } else {
           hl._clearLayer(this.map, 'polyline');
