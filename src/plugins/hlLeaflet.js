@@ -342,7 +342,23 @@ export default {
         nauticalmiles: '海里'
       },
     }).addTo(map)
-    document.getElementById(`polyline-measure-control`).click()
+    document.querySelectorAll(`.leaflet-control`)[0].style.display = "none";
+    document.getElementById(`polyline-measure-control`).click();
+  },
+  _clearMeasure (map) {
+    if (map) {
+      document.querySelectorAll(`.polyline-measure-clearControl`)[0].click();
+    }
+  },
+  _changeMeasureUnit (map) {
+    if (map) {
+      document.getElementById(`unitControlId`).click();
+    }
+  },
+  _getMeasureUnit (map) {
+    if (map) {
+      return document.getElementById(`unitControlId`).innerHTML;
+    }
   },
   _mearsureArea (map) {
     // 继承测面积插件的_handleMeasureDoubleClick方法，改写弹窗内容

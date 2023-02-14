@@ -7,10 +7,19 @@
       <li @click="rectangle()">{{ isRectangle ? '清除矩形' : '数据绘矩形' }}</li>
       <li @click="circle()">{{ isCircle ? '清除圆形' : '数据绘圆形' }}</li>
       <li @click="angleCircle()">{{ isAngleCircle ? '清除角度画圆（台风风圈）' : '绘制角度画圆（台风风圈）' }}</li>
-      <li @click="mearsure()">测量距离</li>
+      <li @click="mearsure()">{{ isMeasure ? '清除测量' : '测量距离' }}</li>
+      <li>当前测量距离单位：{{measureUnit}}</li>
+      <li @click="changeMearsureUnit()">切换单位</li>
       <li @click="area()">测量面积</li>
-      <!-- <li @click="draw('marker')">{{ isDrawing ? '取消地图绘点' : '地图绘点' }}</li> -->
       <li @click="hotMap()">{{ isHot ? '清除热力图' : '绘制热力图' }}</li>
+      <li @click="edit(0)">{{ isEditPolygon? '清除绘制多边形':'直接绘制多边形'}}</li>
+      <li @click="edit(1)">{{ isEditCircle? '清除绘制圆形':'直接绘制圆形'}}</li>
+      <li @click="edit(2)">{{ isEditRectangle?'清除绘制矩形':'直接绘制矩形'}}</li>
+      <li @click="editMarkerGetData()">{{iseditMarkerGetData ? '清除绘点' : '直接绘点' }}</li>
+      <li @click="trackBack()">{{isTrackBack ? '清除轨迹' : '轨迹回放' }}</li>
+      <li @click="quitTrack()">{{isStop?'开启轨迹回放':'暂停轨迹回放'}}</li>
+      <li @click="setTrackSpeed(10)">设置轨迹回放速度为10</li>
+      <li @click="restartTrack()">刷新轨迹回放</li>
       <li @click="changeLayers(1)">切换天地图卫星图</li>
       <li @click="changeLayers(2)">切换天地图地形图</li>
       <li @click="changeLayers(3)">切换天地图街道图</li>
@@ -20,14 +29,6 @@
       <li @click="fullScreen()">全屏</li>
       <li @click="actMapZoomIO(1)">放大</li>
       <li @click="actMapZoomIO(-1)">缩小</li>
-      <li @click="edit(0)">{{ isEditPolygon? '清除绘制多边形':'直接绘制多边形'}}</li>
-      <li @click="edit(1)">{{ isEditCircle? '清除绘制圆形':'直接绘制圆形'}}</li>
-      <li @click="edit(2)">{{ isEditRectangle?'清除绘制矩形':'直接绘制矩形'}}</li>
-      <li @click="editMarkerGetData()">{{iseditMarkerGetData ? '清除绘点' : '直接绘点' }}</li>
-      <li @click="trackBack()">{{isTrackBack ? '清除轨迹' : '轨迹回放' }}</li>
-      <li @click="quitTrack()">{{isStop?'开启轨迹回放':'暂停轨迹回放'}}</li>
-      <li @click="setTrackSpeed(10)">设置轨迹回放速度为10</li>
-      <li @click="restartTrack()">刷新轨迹回放</li>
     </ul>
   </div>
 </template>
@@ -57,7 +58,8 @@
         isMeasure: false,
         isArea: false,
         isDrawing: false,
-        isStop: false
+        isStop: false,
+        measureUnit: ''
       }
     },
     props: {
@@ -65,6 +67,13 @@
         type: Object,
         default: () => {
           return {};
+        }
+      }
+    },
+    watch: {
+      isMeasure (newVal) {
+        if (newVal) {
+          this.getMeasureUnit();
         }
       }
     },
@@ -143,7 +152,19 @@
         }
       },
       mearsure () {
-        hl._measure(this.map);
+        this.isMeasure = !this.isMeasure;
+        if (this.isMeasure) {
+          hl._measure(this.map);
+        } else {
+          hl._clearMeasure(this.map);
+        }
+      },
+      changeMearsureUnit () {
+        hl._changeMeasureUnit(this.map);
+        this.getMeasureUnit(this.map);
+      },
+      getMeasureUnit () {
+        this.measureUnit = hl._getMeasureUnit(this.map);
       },
       area () {
         let fn = function () {
