@@ -208,7 +208,23 @@
         if (type === 0) { //多边形
           this.isEditPolygon = !this.isEditPolygon;
           if (this.isEditPolygon) {
+            //start 初始化监听得到绘制时候经纬度
+            this.map.on('pm:drawstart', e => {
+              console.log('绘制开始')
+              console.log(e);
+            });
+            this.map.on('pm:drawend', e => {
+              console.log('绘制结束')
+              console.log(e);
+            });
+            this.map.on('pm:create', e => {
+              console.log('创建完成');
+              console.log(e);
+            });
+            //end 得到绘制时候经纬度
+
             hl._editMapGetData(this.map, type);
+
           } else {
             hl._clearLayer(this.map, 'editingLayers');
           }

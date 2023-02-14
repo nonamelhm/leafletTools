@@ -1,8 +1,8 @@
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import '@/assets/css/Leaflet.PolylineMeasure.css'// 画线框架
-import 'leaflet.pm';
 import 'leaflet.pm/dist/leaflet.pm.css';
+import 'leaflet.pm';
 import '@/assets/js/Leaflet.PolylineMeasure.js';
 import 'leaflet-measure/dist/leaflet-measure.css';// 测面积
 import 'leaflet-measure/dist/leaflet-measure.cn';
@@ -191,12 +191,10 @@ export default {
     this.mapControl.fullscreen = L.control.fullscreen();
     this.map = reMap
     this._hlFeatureGroup = L.featureGroup([]).addTo(this.map);
-
     return this.map;
   },
   _onmousemoveEvt (e) {
     this._currentLatlng = e.latlng;
-    localStorage.setItem("_currentLatlng", JSON.stringify(e.latlng));
   },
   _changeLayers (map, idx) {
     this.mapControl.layers = L.control.layers(this.tempSetting);
@@ -342,7 +340,6 @@ export default {
     }
     map.addLayer(this.mapControl[layersName]);
     this._fitBounds(map, data);
-
   },
   _measure (map) {
     L.control.polylineMeasure({
@@ -504,6 +501,7 @@ export default {
   },
   _editMarkerGetData (map, iconUrl = require("@/assets/images/leaflet_icon/position-icon.png"), imgWidth = 20, imgHeight = 20, layersName = 'editingMarker') {
     this._clearAllEdit(map);
+    // map.off('mousemove', this._onmousemoveEvt, this);
     if (!map.hasLayer(this.mapControl[layersName])) {
       this.mapControl[layersName] = L.layerGroup().addTo(map);
     }
@@ -525,18 +523,48 @@ export default {
       _this.mapControl[layersName].addLayer(_this.drawList);
       map.addLayer(_this.mapControl[layersName]);
       _this._drawLatlngs = e.layer._latlng;
-      localStorage.setItem('_drawLatLngs', JSON.stringify(e.layer._latlng));//将数据存到localStorage
       e.layer.on('pm:edit', e2 => {
         _this._drawLatlngs = e2.sourceTarget._latlng;
-        localStorage.setItem('_drawLatLngs', JSON.stringify(e2.sourceTarget._latlng));//将数据存到localStorage
       })
     })
   },
   _editMapGetData (map, type = 0, color = 'rgba(51, 136, 255, 1)', layersName = 'editingLayers') {
     this._clearAllEdit(map);
+    // map.off('mousemove', this._onmousemoveEvt, this);
     if (!map.hasLayer(this.mapControl[layersName])) {
       this.mapControl[layersName] = L.layerGroup().addTo(map);
     }
+    //监听地图经纬度
+    let _this = this;
+    map.on('pm:drawstart', ({ workingLayer }) => { // 记录绘制的点得到数据
+      workingLayer.on('pm:vertexadded', e => {
+        _this.drawList = e.workingLayer;
+        _this.mapControl[layersName].addLayer(_this.drawList);
+        map.addLayer(_this.mapControl[layersName]);
+        _this._drawLatlngs = e.target._latlngs;
+      })
+    })
+    map.on('pm:create', e => {
+      _this.drawList = e.layer;
+      _this.mapControl[layersName].addLayer(_this.drawList);
+      map.addLayer(_this.mapControl[layersName]);
+      if (e.shape === 'Circle') {//圆形
+        _this._drawLatlngs = e.layer._latlng;
+        _this._drawCircleRadius = e.layer._mRadius;
+      } else {
+        _this._drawLatlngs = e.layer._latlngs;
+      }
+      e.layer.pm.enable();
+      e.layer.on('pm:edit', e2 => {
+        if (type === 1) {//圆形
+          _this._drawLatlngs = e2.sourceTarget._latlng;
+          _this._drawCircleRadius = e2.sourceTarget._mRadius;
+        } else {
+          _this._drawLatlngs = e2.sourceTarget._latlngs;
+        }
+      })
+    })
+
     let chooseDraw = 'Polygon';//默认多边形
     let drawType = {
       0: 'Polygon',
@@ -566,48 +594,6 @@ export default {
         snappable: true, //启⽤捕捉到其他绘制图形的顶点
         snapDistance: 20, //顶点捕捉距离
       })
-    //监听地图经纬度
-    let _this = this;
-    map.on('pm:create', e => {
-      _this.drawList = e.layer;
-      _this.mapControl[layersName].addLayer(_this.drawList);
-      map.addLayer(_this.mapControl[layersName]);
-      if (type !== 0) {
-        if (type === 1) {//圆形
-          _this._drawLatlngs = e.layer._latlng;
-          _this._drawCircleRadius = e.layer._mRadius;
-          localStorage.setItem('_drawLatLngs', JSON.stringify(e.layer._latlng));//将数据存到localStorage
-          localStorage.setItem('drawCircleRadius', e.layer._mRadius);//将数据存到localStorage
-
-        } else {
-          _this._drawLatlngs = e.layer._latlngs;
-          localStorage.setItem('_drawLatLngs', JSON.stringify(e.layer._latlngs));//将数据存到localStorage
-        }
-      }
-      e.layer.pm.enable();
-      e.layer.on('pm:edit', e2 => {
-        if (type === 1) {//圆形
-          _this._drawLatlngs = e2.sourceTarget._latlng;
-          _this._drawCircleRadius = e2.sourceTarget._mRadius;
-          localStorage.setItem('_drawLatLngs', JSON.stringify(e2.sourceTarget._latlng));//
-          localStorage.setItem('_drawCircleRadius', e2.sourceTarget._mRadius);//将数据存到localStorage
-        } else {
-          _this._drawLatlngs = e2.sourceTarget._latlngs;
-          localStorage.setItem('_drawLatLngs', JSON.stringify(e2.sourceTarget._latlngs));//将数据存到localStorage
-        }
-
-      })
-    })
-    map.on('pm:drawstart', ({ workingLayer }) => { // 记录绘制的点得到数据
-      workingLayer.on('pm:vertexadded', e => {
-        _this.drawList = e.workingLayer;
-        _this.mapControl[layersName].addLayer(_this.drawList);
-        map.addLayer(_this.mapControl[layersName]);
-        _this._drawLatlngs = e.target._latlngs;
-        localStorage.setItem('_drawLatLngs', JSON.stringify(e.target._latlngs));//将数据存到localStorage
-      })
-    })
-
   },
   _drawHeatMap (map, data, layersName = 'hotLayers', options = { radius: 10, minOpacity: 0.85 }) {
     if (!map.hasLayer(this.mapControl[layersName])) {

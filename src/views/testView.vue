@@ -15,6 +15,12 @@
     },
     mounted () {
       this.map = hl._initMap("map2", { lat: 24, lon: 110, zoom: 4 })
+      //鼠标移动位置
+      if (this.map) {
+        this.map.on('mousemove', e => {
+          console.log('当前经纬度', e.latlng)
+        });
+      }
     },
     data () {
       return {
