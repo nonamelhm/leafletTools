@@ -103,6 +103,20 @@ export default {
     iconSize: 30,
     color: 'red'
   },
+  pointOptions: {
+    iconUrl: require("@/assets/images/leaflet_icon/marker-icon.png"),
+    iconSize: [25, 41],
+    spiderfyOnMaxZoom: false,
+    showCoverageOnHover: false,
+    zoomToBoundsOnClick: true,
+    disableClusteringAtZoom: 16,
+    maxClusterRadius: 60,
+    iconCreateFunction: function (cluster) {
+      var tempcount = cluster.getChildCount()
+      var tempclass = tempcount > 500 ? 'red' : tempcount > 200 ? 'blue2' : tempcount > 100 ? 'blue' : tempcount > 50 ? 'green2' : 'green'
+      return L.divIcon({ html: '<b class="' + tempclass + '">' + cluster.getChildCount() + '</b>' });
+    }
+  },
   //轨迹回放配置
   _conf () {
     //start---设置基本图层:空白+天地图+谷歌
@@ -193,32 +207,19 @@ export default {
   _fitPoint (map, pointData) {
     map.setView(pointData, 16);
   },
-  _renderPoint (map, list, layersName = 'layers1', iconUrl = require("@/assets/images/leaflet_icon/marker-icon.png"), clusterFlag = false, fn) {
+  _renderPoint (map, list, layersName = 'pointLayers', options = {}, clusterFlag = false) {
+    let allOptions = Object.assign(this.pointOptions, options);
     if (clusterFlag) {
-      this.mapControl[layersName] = L.markerClusterGroup({
-        spiderfyOnMaxZoom: false,
-        showCoverageOnHover: false,
-        zoomToBoundsOnClick: true,
-        disableClusteringAtZoom: 16,
-        maxClusterRadius: 60,
-        iconCreateFunction: function (cluster) {
-          var tempcount = cluster.getChildCount()
-          var tempclass = tempcount > 500 ? 'red' : tempcount > 200 ? 'blue2' : tempcount > 100 ? 'blue' : tempcount > 50 ? 'green2' : 'green'
-          return L.divIcon({ html: '<b class="' + tempclass + '">' + cluster.getChildCount() + '</b>' });
-        }
-      });
+      this.mapControl[layersName] = L.markerClusterGroup(allOptions);
     } else { //聚合点
       if (!map.hasLayer(this.mapControl[layersName])) {
         this.mapControl[layersName] = L.layerGroup().addTo(map);
       }
     }
-    this._loadPic(iconUrl).then(() => {
-      var icon = L.icon({
-        iconUrl: iconUrl,
-        iconSize: [25, 41]
-      })
-      for (var p of list) {
-        this.pointList[p.id] = L.marker(L.latLng(p.lat, p.lng), {
+    this._loadPic(allOptions.iconUrl).then(() => {
+      var icon = L.icon(allOptions)
+      list.forEach((p, i) => {
+        this.pointList[i] = L.marker(L.latLng(p.lat, p.lng), {
           icon: icon,
           info: p
         }).on('click', function (e) {
@@ -230,8 +231,8 @@ export default {
               .openOn(map);
           }
         }) //以id为属性作为点的区别
-        this.mapControl[layersName].addLayer(this.pointList[p.id])
-      }
+        this.mapControl[layersName].addLayer(this.pointList[i])
+      });
       map.addLayer(this.mapControl[layersName]);
     })
   },
