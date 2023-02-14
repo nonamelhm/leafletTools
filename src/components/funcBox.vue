@@ -84,7 +84,7 @@
         this.isPoint = !this.isPoint
         if (this.isPoint) {
           // 显示内容提前封装在msg中
-          let list = [{ lat: 24, lng: 110, id: 1, showMsg: `显示内容1-24-110` }, { lat: 22, lng: 110, id: 3, showMsg: `显示内容2-24-110` }]
+          let list = [{ lat: 24, lng: 110, id: 1, showMsg: `点击点显示内容1test` }, { lat: 22, lng: 110, id: 3, showMsg: `点击点显示内容2test` }];
           hl._renderPoint(this.map, list, 'layers1', require("@/assets/images/leaflet_icon/marker-icon-2x.png"), true)
           hl._renderPoint(this.map, [{ lat: 25, lng: 110, id: 2, showMsg: `显示内容2-25-110` }], 'layers2')
           hl._renderPoint(this.map, [{ lat: 26, lng: 110, id: 2, showMsg: `显示内容2-26-110` }], 'layers2')
@@ -100,7 +100,7 @@
           hl._drawLineByData(this.map, list, 'polyline', { color: 'blue', weight: 1, showDistance: true }, '24</br>小</br>时</br>警</br>戒</br>线')
           let list2 = [{ lat: 25, lng: 111 }, { lat: 30, lng: 102 }, { lat: 24, lng: 113 }]
           hl._drawLineByData(this.map, list2, 'polyline2', { color: 'red', weight: 1, showDistance: true }, 'test')
-          hl._drawTips(this.map, { lat: 24, lng: 110 }, 'test', 'polyline');
+          hl._drawTips(this.map, { lat: 24, lng: 110 }, 'tips', { html: 'hello-hhh' });
         } else {
           hl._clearLayer(this.map, 'polyline');
           hl._clearLayer(this.map, 'polyline2');

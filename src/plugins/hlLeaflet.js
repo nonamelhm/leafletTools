@@ -266,13 +266,13 @@ export default {
     map.addLayer(this.mapControl[layersName]);
     this._fitBounds(map, data)
   },
-  _drawTips (map, latlng, contentHtml, layersName = 'defaultTipsLayers', options) {
+  _drawTips (map, latlng, layersName = 'defaultTipsLayers', options) {
     if (!map.hasLayer(this.mapControl[layersName])) {
       this.mapControl[layersName] = L.layerGroup().addTo(map);
     }
     let allOptions = Object.assign(this.tipsOptions, options);
     // 有内容介绍的线
-    if (!contentHtml) return;
+    if (!allOptions.html) return;
     let myIcon = L.divIcon(allOptions)
     let lineTips = L.marker([latlng.lat, latlng.lng], {
       icon: myIcon,
@@ -281,7 +281,7 @@ export default {
     this.mapControl[layersName].addLayer(lineTips);
     map.addLayer(this.mapControl[layersName]);
   },
-  _drawByData (map, data, layersName = 'defaultLayers', type, options) { //画线
+  _drawByData (map, data, layersName = 'defaultLayers', type, options) {
     if (!map.hasLayer(this.mapControl[layersName])) {
       this.mapControl[layersName] = L.layerGroup().addTo(map);
     }
