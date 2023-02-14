@@ -12,6 +12,7 @@
       <li @click="changeMearsureUnit()">切换测量距离单位</li>
       <li @click="area()">测量面积</li>
       <li @click="hotMap()">{{ isHot ? '清除热力图' : '绘制热力图' }}</li>
+      <li @click="clearEdit()">清除正在绘制</li>
       <li @click="edit(0)">{{ isEditPolygon? '清除绘制多边形':'直接绘制多边形'}}</li>
       <li @click="edit(1)">{{ isEditCircle? '清除绘制圆形':'直接绘制圆形'}}</li>
       <li @click="edit(2)">{{ isEditRectangle?'清除绘制矩形':'直接绘制矩形'}}</li>
@@ -76,6 +77,9 @@
       }
     },
     methods: {
+      clearEdit () {
+        hl._clearAllEdit(this.map);
+      },
       point () {
         this.isPoint = !this.isPoint
         if (this.isPoint) {
