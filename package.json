@@ -1,11 +1,14 @@
 {
-  "name": "leafletfunc",
-  "version": "0.1.0",
-  "private": true,
+  "name": "leaflettools",
+  "version": "1.1.0",
+  "private": false,
+  "description": "帮助解决基本的leaflet使用问题",
+  "main": "./src/plugins/hlLeaflet.js",
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
-    "lint": "vue-cli-service lint"
+    "lint": "vue-cli-service lint",
+    "lib": "vue-cli-service build --target lib --name leaflettools --dest lib ./src/plugins/hlLeaflet.js"
   },
   "dependencies": {
     "core-js": "^3.8.3",
