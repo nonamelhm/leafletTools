@@ -6,9 +6,7 @@
   </div>
 </template>
 <script>
-  // import leaf from '@/plugins/leaflet_func.js'
   import hl from '@/plugins/hlLeaflet.js'
-  // import '@/plugins/index.js'
   // import leaf from 'leaflettools'
   import funcBox from '@/components/funcBox.vue'
   export default {
@@ -21,7 +19,7 @@
       //鼠标移动位置
       if (this.map) {
         this.map.on('mousemove', e => {
-          console.log(e, '----')
+          console.log('当前经纬度', e.latlng)
         });
       }
     },

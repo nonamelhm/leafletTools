@@ -9,7 +9,7 @@
       <li @click="angleCircle()">{{ isAngleCircle ? '清除角度画圆（台风风圈）' : '绘制角度画圆（台风风圈）' }}</li>
       <li @click="mearsure()">{{ isMeasure ? '清除测量' : '测量距离' }}</li>
       <li>当前测量距离单位：{{measureUnit}}</li>
-      <li @click="changeMearsureUnit()">切换单位</li>
+      <li @click="changeMearsureUnit()">切换测量距离单位</li>
       <li @click="area()">测量面积</li>
       <li @click="hotMap()">{{ isHot ? '清除热力图' : '绘制热力图' }}</li>
       <li @click="edit(0)">{{ isEditPolygon? '清除绘制多边形':'直接绘制多边形'}}</li>
@@ -33,9 +33,7 @@
   </div>
 </template>
 <script>
-  import L from 'leaflet';
   import hl from '@/plugins/hlLeaflet.js'
-  // import '@/plugins/index.js'
   // import leaf from 'leaflettools'
   import { testData } from '@/plugins/test.js';
   export default {
