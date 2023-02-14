@@ -107,7 +107,7 @@
       },
       polygon () {
         this.isPolygon = !this.isPolygon
-        let list = [[{ lat: 24, lng: 110 }, { lat: 22, lng: 110 }, { lat: 32, lng: 112 }, { lat: 25, lng: 14 }], [{ lat: 19, lng: 10 }, { lat: 12, lng: 80 }, { lat: 2, lng: 22 }, { lat: 5, lng: 14 }]]
+        let list = [[{ lat: 24, lng: 110, showMsg: 'hello' }, { lat: 22, lng: 110 }, { lat: 32, lng: 112 }, { lat: 25, lng: 14 }], [{ lat: 19, lng: 10, showMsg: 'hi' }, { lat: 12, lng: 80 }, { lat: 2, lng: 22 }, { lat: 5, lng: 14 }]]
         if (this.isPolygon) {
           hl._drawByData(this.map, list, `polygon`, 'polygon', { color: 'green', weight: 1 })
         } else {

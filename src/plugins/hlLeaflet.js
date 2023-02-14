@@ -42,6 +42,9 @@ export default {
   trackplaybackControl: null,
   tracklineLayers: [],
   windCircleLayers: [],
+  _currentLatlng: {},
+  _drawLatlngs: [],
+  _drawCircleRadius: '',
   initMapOptions: { //初始化配置
     lat: 23.1538555,
     lng: 113.030911,
@@ -117,6 +120,10 @@ export default {
       return L.divIcon({ html: '<b class="' + tempclass + '">' + cluster.getChildCount() + '</b>' });
     }
   },
+  patternOptions: {
+    color: '#fc4a14',
+    weight: 2
+  },
   //轨迹回放配置
   _conf () {
     //start---设置基本图层:空白+天地图+谷歌
@@ -183,8 +190,13 @@ export default {
     this.mapControl.zomm.addTo(reMap).setPosition('topright')
     this.mapControl.fullscreen = L.control.fullscreen();
     this.map = reMap
-    this._hlFeatureGroup = L.featureGroup([]).addTo(this.map)
+    this._hlFeatureGroup = L.featureGroup([]).addTo(this.map);
+
     return this.map;
+  },
+  _onmousemoveEvt (e) {
+    this._currentLatlng = e.latlng;
+    localStorage.setItem("_currentLatlng", JSON.stringify(e.latlng));
   },
   _changeLayers (map, idx) {
     this.mapControl.layers = L.control.layers(this.tempSetting);
@@ -261,29 +273,38 @@ export default {
     }
     let allOptions = Object.assign(this.tipsOptions, options);
     // 有内容介绍的线
-    if (contentHtml) {
-      let myIcon = L.divIcon(allOptions)
-      let lineTips = L.marker([latlng.lat, latlng.lng], {
-        icon: myIcon,
-        ...allOptions
-      })
-      this.mapControl[layersName].addLayer(lineTips);
-    }
+    if (!contentHtml) return;
+    let myIcon = L.divIcon(allOptions)
+    let lineTips = L.marker([latlng.lat, latlng.lng], {
+      icon: myIcon,
+      ...allOptions
+    })
+    this.mapControl[layersName].addLayer(lineTips);
     map.addLayer(this.mapControl[layersName]);
   },
-  _drawByData (map, data, layersName = 'defaultLayers', type, options = { color: '#fc4a14', weight: 2 }) { //画线
+  _drawByData (map, data, layersName = 'defaultLayers', type, options) { //画线
     if (!map.hasLayer(this.mapControl[layersName])) {
       this.mapControl[layersName] = L.layerGroup().addTo(map);
     }
+    let allOptions = Object.assign(this.patternOptions, options);
     let latlngs = []
     if (!type.includes('circle')) {
       data.forEach((p, i) => {
         if (!Array.isArray(p)) {
           latlngs.push([p.lat, p.lng]);
           if (type === 'polygon') {
-            this.drawList[i] = L.polygon(latlngs, options);
+            this.drawList[i] = L.polygon(latlngs, { ...allOptions, info: p }).on('click', function (e) {
+              console.log(e, 'click')
+              let info = e.sourceTarget.options.info;
+              if (info.showMsg) {
+                L.popup({ offset: [0, 0], className: 'hlleaflet-marker-popup' })
+                  .setLatLng([e.sourceTarget._latlng.lat, e.sourceTarget._latlng.lng])
+                  .setContent(`${info.showMsg}`)
+                  .openOn(map);
+              }
+            })
           } else if (type === 'rectangle') {
-            this.drawList[i] = L.rectangle(latlngs, options);
+            this.drawList[i] = L.rectangle(latlngs, allOptions);
           }
         } else {
           let temArr = []
@@ -291,7 +312,17 @@ export default {
             temArr.push([item.lat, item.lng]);
           }
           if (type === 'polygon') {
-            this.drawList[i] = L.polygon(temArr, options);
+            this.drawList[i] = L.polygon(temArr, { ...allOptions, info: p }).on('click', function (e) {
+              console.log(e, 'click')
+              let info = e.sourceTarget.options.info;
+              console.log(info[0])
+              if (info[0].showMsg) {
+                L.popup({ offset: [0, 0], className: 'hlleaflet-pattern-popup' })
+                  .setLatLng([e.sourceTarget._latlngs[0].lat, e.sourceTarget._latlngs[0].lng])
+                  .setContent(`${info[0].showMsg}`)
+                  .openOn(map);
+              }
+            })
           } else if (type === 'rectangle') {
             this.drawList[i] = L.rectangle(temArr, options);
           }
@@ -311,6 +342,7 @@ export default {
     }
     map.addLayer(this.mapControl[layersName]);
     this._fitBounds(map, data);
+
   },
   _measure (map) {
     L.control.polylineMeasure({
@@ -492,9 +524,11 @@ export default {
       _this.drawList = e.layer;
       _this.mapControl[layersName].addLayer(_this.drawList);
       map.addLayer(_this.mapControl[layersName]);
-      localStorage.setItem('drawLatLng', JSON.stringify(e.layer._latlng));//将数据存到localStorage
+      _this._drawLatlngs = e.layer._latlng;
+      localStorage.setItem('_drawLatLngs', JSON.stringify(e.layer._latlng));//将数据存到localStorage
       e.layer.on('pm:edit', e2 => {
-        localStorage.setItem('drawLatLng', JSON.stringify(e2.sourceTarget._latlng));//将数据存到localStorage
+        _this._drawLatlngs = e2.sourceTarget._latlng;
+        localStorage.setItem('_drawLatLngs', JSON.stringify(e2.sourceTarget._latlng));//将数据存到localStorage
       })
     })
   },
@@ -540,20 +574,26 @@ export default {
       map.addLayer(_this.mapControl[layersName]);
       if (type !== 0) {
         if (type === 1) {//圆形
-          localStorage.setItem('drawLatLng', JSON.stringify(e.layer._latlng));//将数据存到localStorage
+          _this._drawLatlngs = e.layer._latlng;
+          _this._drawCircleRadius = e.layer._mRadius;
+          localStorage.setItem('_drawLatLngs', JSON.stringify(e.layer._latlng));//将数据存到localStorage
           localStorage.setItem('drawCircleRadius', e.layer._mRadius);//将数据存到localStorage
 
         } else {
-          localStorage.setItem('drawLatLng', JSON.stringify(e.layer._latlngs));//将数据存到localStorage
+          _this._drawLatlngs = e.layer._latlngs;
+          localStorage.setItem('_drawLatLngs', JSON.stringify(e.layer._latlngs));//将数据存到localStorage
         }
       }
       e.layer.pm.enable();
       e.layer.on('pm:edit', e2 => {
         if (type === 1) {//圆形
-          localStorage.setItem('drawLatLng', JSON.stringify(e2.sourceTarget._latlng));//
-          localStorage.setItem('drawCircleRadius', e2.sourceTarget._mRadius);//将数据存到localStorage
+          _this._drawLatlngs = e2.sourceTarget._latlng;
+          _this._drawCircleRadius = e2.sourceTarget._mRadius;
+          localStorage.setItem('_drawLatLngs', JSON.stringify(e2.sourceTarget._latlng));//
+          localStorage.setItem('_drawCircleRadius', e2.sourceTarget._mRadius);//将数据存到localStorage
         } else {
-          localStorage.setItem('drawLatLng', JSON.stringify(e2.sourceTarget._latlngs));//将数据存到localStorage
+          _this._drawLatlngs = e2.sourceTarget._latlngs;
+          localStorage.setItem('_drawLatLngs', JSON.stringify(e2.sourceTarget._latlngs));//将数据存到localStorage
         }
 
       })
@@ -563,7 +603,8 @@ export default {
         _this.drawList = e.workingLayer;
         _this.mapControl[layersName].addLayer(_this.drawList);
         map.addLayer(_this.mapControl[layersName]);
-        localStorage.setItem('drawLatLng', JSON.stringify(e.target._latlngs));//将数据存到localStorage
+        _this._drawLatlngs = e.target._latlngs;
+        localStorage.setItem('_drawLatLngs', JSON.stringify(e.target._latlngs));//将数据存到localStorage
       })
     })
 
