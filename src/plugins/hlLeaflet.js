@@ -170,7 +170,7 @@ export default {
     }
     //end---设置基本图层:空白+天地图+谷歌
   },
-  _initMap: function (mapId, options) {
+  _initMap (mapId, options) {
     this._conf();
     let allOptions = Object.assign(this.initMapOptions, options);
     let defaultLayersNum = parseInt(sessionStorage.getItem('layerIndex'));
@@ -217,7 +217,7 @@ export default {
   _fitPoint (map, pointData) {
     map.setView(pointData, 16);
   },
-  _renderPoint (map, list, layersName = 'pointLayers', options = {}, clusterFlag = false) {
+  _renderPoint (map, data, layersName = 'defaultPointLayers', options = {}, clusterFlag = false) {
     let allOptions = Object.assign(this.pointOptions, options);
     if (clusterFlag) {
       this.mapControl[layersName] = L.markerClusterGroup(allOptions);
@@ -228,7 +228,7 @@ export default {
     }
     this._loadPic(allOptions.iconUrl).then(() => {
       var icon = L.icon(allOptions)
-      list.forEach((p, i) => {
+      data.forEach((p, i) => {
         this.pointList[i] = L.marker(L.latLng(p.lat, p.lng), {
           icon: icon,
           info: p
