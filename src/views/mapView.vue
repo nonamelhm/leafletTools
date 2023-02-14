@@ -23,6 +23,9 @@
         });
       }
     },
+    beforeDistroy () {
+      this.map.off('mousemove');
+    },
     data () {
       return {
         map: {}
