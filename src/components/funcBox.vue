@@ -36,7 +36,7 @@
 <script>
   import hl from '@/plugins/hlLeaflet.js'
   // import leaf from 'leaflettools'
-  import { testData } from '@/plugins/test.js';
+  // import { testData } from '@/plugins/test.js';
   export default {
     name: 'funcBox',
     data () {
@@ -214,10 +214,14 @@
           this.isEditPolygon = !this.isEditPolygon;
           if (this.isEditPolygon) {
             //start 初始化监听得到绘制时候经纬度
-            this.map.on('pm:drawstart', e => {
+            this.map.on('pm:drawstart', ({ workingLayer }) => {
               console.log('绘制开始')
-              console.log(e);
-            });
+              console.log(workingLayer);
+              // 记录绘制的点得到数据 多边形
+              workingLayer.on('pm:vertexadded', (e) => {
+                console.log(e)
+              });
+            })
             this.map.on('pm:drawend', e => {
               console.log('绘制结束')
               console.log(e);
@@ -261,6 +265,16 @@
       trackBack () {
         this.isTrackBack = !this.isTrackBack;
         if (this.isTrackBack) {
+          let testData = [
+            [
+              { "lng": 133.78486666666666, "lat": 34.34605, "time": 1676458023, "speed": 122, "dir": 61.8, "heading": 62, "point": 1, "info": [] },
+              { "lng": 134.98611666666667, "lat": 33.88173333333334, "speed": 124, "point": 3, "time": 1676459023, "dir": 142.7, "heading": 139, "info": [] }
+            ],
+            [
+              { "lng": 130.78486666666666, "lat": 31.34605, "time": 1676458023, "speed": 132, "dir": 61.8, "heading": 62, "point": 1, "info": [] },
+              { "lng": 136.98611666666667, "lat": 32.88173333333334, "speed": 134, "point": 3, "time": 1676459023, "dir": 142.7, "heading": 139, "info": [] }
+            ]
+          ]
           hl._trackPlay(this.map, testData, { isDrawLine: false });
           hl._startTrack();
         } else {//  清除轨迹

@@ -686,7 +686,7 @@ export default {
     if (!map) return;
     map.zoomOut();
   },
-  _trackPlay (map, data, options, manyLineColor = ['red', 'bule', 'yellow', 'orange', 'pink']) { //轨迹回放 lineColor多轨迹线条颜色
+  _trackPlay (map, data, options, manyLineColor = ['red', 'blue', 'yellow', 'orange', 'pink']) { //轨迹回放 lineColor多轨迹线条颜色
     if (!map) return;
     let _this = this;
     let allTargetOptions = Object.assign(this.trackplayOptions, options);
@@ -705,7 +705,7 @@ export default {
           for (var p of item) {
             latlngs.push([p.lat, p.lng])
           }
-          _this.tracklineLayers.push(L.polyline(latlngs, { color: manyLineColor[index] ? manyLineColor[index] : 'green', ...allTargetOptions }).addTo(map));
+          _this.tracklineLayers.push(L.polyline(latlngs, { ...allTargetOptions, color: manyLineColor[index] ? manyLineColor[index] : 'green' }).addTo(map));
         }
       })
       _this.trackplay = L.trackplayback(data, map, {
