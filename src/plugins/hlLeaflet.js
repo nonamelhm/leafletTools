@@ -40,7 +40,6 @@ export default {
   drawLatlng: {},
   trackplay: null,
   trackplaybackControl: null,
-  tracklineLayers: [],
   windCircleLayers: [],
   _currentLatlng: {},
   _drawLatlngs: [],
@@ -691,7 +690,6 @@ export default {
     let _this = this;
     let allTargetOptions = Object.assign(this.trackplayOptions, options);
     // 画出轨迹的起点终点停止点 判断数据是单轨迹还是多轨迹
-    // _this.tracklineLayers = [];
     if (!map.hasLayer(_this.mapControl['trackplay'])) {
       _this.mapControl['trackplay'] = L.layerGroup().addTo(map);
     }
@@ -701,7 +699,6 @@ export default {
         for (var p of data) {
           latlngs.push([p.lat, p.lng])
         }
-        // _this.tracklineLayers.push(L.polyline(latlngs, allTargetOptions).addTo(map));
         _this.drawList[index] = L.polyline(latlngs, allTargetOptions).addTo(map);
       } else { //多轨迹画出轨迹  不显示里程
         let latlngs = []
@@ -709,7 +706,6 @@ export default {
           latlngs.push([p.lat, p.lng])
         }
         _this.drawList[index] = L.polyline(latlngs, { ...allTargetOptions, color: manyLineColor[index] ? manyLineColor[index] : 'green' }).addTo(map);
-        // _this.tracklineLayers.push(L.polyline(latlngs, { ...allTargetOptions, color: manyLineColor[index] ? manyLineColor[index] : 'green' }).addTo(map));
       }
       _this.mapControl['trackplay'].addLayer(_this.drawList[index]);
     })
