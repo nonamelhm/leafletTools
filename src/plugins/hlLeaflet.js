@@ -1,4 +1,5 @@
 import 'leaflet/dist/leaflet.css';
+import '@/assets/css/hlLeaflet.css';// 测面积
 import L from 'leaflet';
 import '@/assets/css/Leaflet.PolylineMeasure.css'// 画线框架
 import 'leaflet.pm/dist/leaflet.pm.css';
@@ -19,7 +20,8 @@ import '@/assets/js/trackback/control.playback.css';//引入多轨迹css
 import '@/assets/js/trackback/control.trackplayback';//引入多轨迹控制
 import '@/assets/js/trackback/leaflet.trackplayback';//引入多轨迹
 import '@/assets/js/trackback/rastercoords';// 定向地图
-
+import dayjs from 'dayjs';
+import { latLonTransform } from '@/utils/util';
 /**
  * leaflet地图绘制类
  * 完成项目中基本绘制的工作
@@ -60,6 +62,8 @@ export default {
     useImg: true,
     color: '#03ff09',
     imgUrl: require("@/assets/images/leaflet_icon/trackplay-icon.png"),
+    iconSize: [30, 30],
+    iconAnchor: [20, 25],
     width: 40,
     height: 40,
     unit: `km/h`,
@@ -114,8 +118,8 @@ export default {
     disableClusteringAtZoom: 16,
     maxClusterRadius: 60,
     iconCreateFunction: function (cluster) {
-      var tempcount = cluster.getChildCount()
-      var tempclass = tempcount > 500 ? 'red' : tempcount > 200 ? 'blue2' : tempcount > 100 ? 'blue' : tempcount > 50 ? 'green2' : 'green'
+      let tempcount = cluster.getChildCount()
+      let tempclass = tempcount > 500 ? 'red' : tempcount > 200 ? 'blue2' : tempcount > 100 ? 'blue' : tempcount > 50 ? 'green2' : 'green'
       return L.divIcon({ html: '<b class="' + tempclass + '">' + cluster.getChildCount() + '</b>' });
     }
   },
@@ -123,6 +127,22 @@ export default {
     color: '#fc4a14',
     weight: 2
   },
+  trackPointImg: [
+    require('@/assets/images/leaflet_icon/tab_state_qidian.png'),// 起点 3
+    require('@/assets/images/leaflet_icon/tab_state_tingzhi.png'), // 停止点 2
+    require('@/assets/images/leaflet_icon/tab_state_zhongdian.png'), // 终点 4
+    require('@/assets/images/leaflet_icon/tab_state_lixian.png'), // 离线 5
+    require('@/assets/images/leaflet_icon/tab_state_sos.png'), // SOS 6
+    require('@/assets/images/leaflet_icon/tab_state_duandian.png'), // 断电 7
+    require('@/assets/images/leaflet_icon/tab_state_chaixie.png'), // 拆卸 8
+    require('@/assets/images/leaflet_icon/tab_state_jinru.png'), // 进入围栏 9
+    require('@/assets/images/leaflet_icon/tab_state_likai.png'), // 离开围栏 10
+    require('@/assets/images/leaflet_icon/tab_state_sudu.png'), // 超速 11
+    require('@/assets/images/leaflet_icon/tab_state_didianliang.png'), // 低电量 12
+    require('@/assets/images/leaflet_icon/tab_state_shangsheng.png'), // 高度上升 13
+    require('@/assets/images/leaflet_icon/tab_state_xiajiang.png'), // 高度下降 14
+    require('@/assets/images/leaflet_icon/tab_state_haiba.png') // 海拔 15
+  ],
   //轨迹回放配置
   _conf () {
     //start---设置基本图层:空白+天地图+谷歌
@@ -230,7 +250,7 @@ export default {
       }
     }
     this._loadPic(allOptions.iconUrl).then(() => {
-      var icon = L.icon(allOptions)
+      let icon = L.icon(allOptions)
       data.forEach((p, i) => {
         this.pointList[i] = L.marker(L.latLng(p.lat, p.lng), {
           icon: icon,
@@ -243,7 +263,7 @@ export default {
               .setContent(`${info.showMsg}`)
               .openOn(map);
           }
-        }) //以id为属性作为点的区别
+        });
         this.mapControl[layersName].addLayer(this.pointList[i])
       });
       map.addLayer(this.mapControl[layersName]);
@@ -263,7 +283,7 @@ export default {
       this.mapControl[layersName] = L.layerGroup().addTo(map);
     }
     let latlngs = []
-    for (var p of data) {
+    for (let p of data) {
       latlngs.push([p.lat, p.lng])
     }
     this.drawList = L.polyline(latlngs, allOptions);
@@ -685,6 +705,92 @@ export default {
     if (!map) return;
     map.zoomOut();
   },
+  _drawTrackPoint (map, MarkersList, options) {
+    if (!map) {
+      return
+    }
+    let layersName = 'trackplay';
+    if (!map.hasLayer(this.mapControl[layersName])) {
+      this.mapControl[layersName] = L.layerGroup().addTo(map);
+    }
+    Promise.all(this.trackPointImg).then(img => { // 全部图片加载完成
+      let graphics = []
+      let image
+      let style = {}
+      for (let i = 0; i < MarkersList.length; ++i) {
+        let info = ''
+        if (MarkersList[i].gDeviceStatus === null || MarkersList[i].gDeviceStatus !== 1) {
+          if (MarkersList[i].gDeviceStatus === 3 || MarkersList[i].gDeviceStatus === 4) { // 起点|终点的文本信息
+            info += "<div class='hl-track-point-box'>" + "纬度：" + (MarkersList[i] && MarkersList[i].lat !== -1 ? latLonTransform(MarkersList[i].lat, 'lat') : "未知") + "</div>"
+            info += "<div class='hl-track-point-box'>" + "经度：" + (MarkersList[i] && MarkersList[i].lng !== -1 ? latLonTransform(MarkersList[i].lng, 'lon') : "未知") + "</div>"
+            info += "<div class='hl-track-point-box'>" + "时间：" + (MarkersList[i].locTime ? dayjs(MarkersList[i].locTime * 1000).format('YYYY-MM-DD HH:mm:ss') : MarkersList[i].timestamp ? MarkersList[i].timestamp : "未知") + "</div>"
+          } else if (MarkersList[i].gDeviceStatus === 2) { // 停止点的文本信息
+            gc = MarkersList[i].stayPoint.lng, MarkersList[i].stayPoint.lat
+            info += "<div class='hl-track-point-box'>" + "纬度：" + (MarkersList[i].stayPoint && MarkersList[i].stayPoint.lat !== -1 ? latLonTransform(MarkersList[i].stayPoint.lat, 'lat') : "未知") + "</div>"
+            info += "<div class='hl-track-point-box'>" + "经度：" + (MarkersList[i].stayPoint && MarkersList[i].stayPoint.lng !== -1 ? latLonTransform(MarkersList[i].stayPoint.lng, 'lon') : "未知") + "</div>"
+            info += "<div class='hl-track-point-box'>" + "停止时间：" + (MarkersList[i].startTime ? MarkersList[i].startTime : "未知") + "</div>"
+            info += "<div class='hl-track-point-box'>" + "移动时间：" + (MarkersList[i].endTime ? MarkersList[i].endTime : "未知") + "</div>"
+            info += "<div class='hl-track-point-box'>" + "停止时长：" + (MarkersList[i].duration ? MarkersList[i].duration : "未知") + "</div>"
+          } else { // 除起点|终点|停止点以外的文本信息
+            gc = MarkersList[i].stayPoint.lng, MarkersList[i].stayPoint.lat
+            info += "<div class='hl-track-point-box'>" + "纬度：" + (MarkersList[i].stayPoint && MarkersList[i].stayPoint.lat !== -1 ? latLonTransform(MarkersList[i].stayPoint.lat, 'lat') : "未知") + "</div>"
+            info += "<div class='hl-track-point-box'>" + "经度：" + (MarkersList[i].stayPoint && MarkersList[i].stayPoint.lng !== -1 ? latLonTransform(MarkersList[i].stayPoint.lng, 'lon') : "未知") + "</div>"
+            info += "<div class='hl-track-point-box'>" + "时间：" + (MarkersList[i].locTime ? dayjs(MarkersList[i].locTime * 1000
+            ).format('YYYY-MM-DD HH:mm:ss') : MarkersList[i].timestamp ? MarkersList[i].timestamp : "未知") + "</div>"
+          }
+          if (MarkersList[i].gDeviceStatus === 3) { // 起点
+            image = this.trackPointImg[0]
+          } else if (MarkersList[i].gDeviceStatus === 4) { // 终点
+            image = this.trackPointImg[2]
+          } else if (MarkersList[i].gDeviceStatus === 5) { // 离线
+            image = this.trackPointImg[3]
+          } else if (MarkersList[i].gDeviceStatus === 6) { // SOS
+            image = this.trackPointImg[4]
+          } else if (MarkersList[i].gDeviceStatus === 7) { // 断电
+            image = this.trackPointImg[5]
+          } else if (MarkersList[i].gDeviceStatus === 8) { // 拆卸
+            image = this.trackPointImg[6]
+          } else if (MarkersList[i].gDeviceStatus === 9) { // 进入围栏
+            image = this.trackPointImg[7]
+          } else if (MarkersList[i].gDeviceStatus === 10) { // 离开围栏
+            image = this.trackPointImg[8]
+          } else if (MarkersList[i].gDeviceStatus === 11) { // 超速
+            image = this.trackPointImg[9]
+          } else if (MarkersList[i].gDeviceStatus === 12) { // 低电量
+            image = this.trackPointImg[10]
+          } else if (MarkersList[i].gDeviceStatus === 13) { // 高度上升
+            image = this.trackPointImg[11]
+          } else if (MarkersList[i].gDeviceStatus === 14) { // 高度下降
+            image = this.trackPointImg[12]
+          } else if (MarkersList[i].gDeviceStatus === 15) { // 海拔
+            image = this.trackPointImg[13]
+          } else {
+            image = this.trackPointImg[1]
+          }
+
+          let icon = L.icon({
+            iconUrl: image,
+            iconSize: options.iconSize,
+            iconAnchor: options.iconAnchor
+          })
+          this.drawList[i] = L.marker(L.latLng(MarkersList[i].lat, MarkersList[i].lng), {
+            icon: icon,
+            info
+          }).on('click', function (e) {
+            let info = e.sourceTarget.options.info;
+            if (info) {
+              L.popup({ offset: [0, 0], className: 'hlleaflet-marker-popup' })
+                .setLatLng([e.sourceTarget._latlng.lat, e.sourceTarget._latlng.lng])
+                .setContent(`${info.showMsg}`)
+                .openOn(map);
+            }
+          })
+          this.mapControl[layersName].addLayer(this.drawList[i]);
+        }
+      }
+      map.addLayer(this.mapControl[layersName]);
+    })
+  },
   _trackPlay (map, data, options, manyLineColor = ['red', 'blue', 'yellow', 'orange', 'pink']) { //轨迹回放 lineColor多轨迹线条颜色
     if (!map) return;
     let _this = this;
@@ -696,15 +802,20 @@ export default {
     data.forEach((item, index) => {
       if (!Array.isArray(item)) { //单轨迹画出轨迹  显示里程
         let latlngs = []
-        for (var p of data) {
-          latlngs.push([p.lat, p.lng])
+        for (let p of data) {
+          latlngs.push([p.lat, p.lng]);
+          // 画出起点终点停止点等等
+          _this._drawTrackPoint(map, data, allTargetOptions);
         }
         _this.drawList[index] = L.polyline(latlngs, allTargetOptions).addTo(map);
       } else { //多轨迹画出轨迹  不显示里程
         let latlngs = []
-        for (var p of item) {
-          latlngs.push([p.lat, p.lng])
+        for (let p of item) {
+          latlngs.push([p.lat, p.lng]);
+          // 画出起点终点停止点等等
+          _this._drawTrackPoint(map, item, allTargetOptions);
         }
+
         _this.drawList[index] = L.polyline(latlngs, { ...allTargetOptions, color: manyLineColor[index] ? manyLineColor[index] : 'green' }).addTo(map);
       }
       _this.mapControl['trackplay'].addLayer(_this.drawList[index]);
@@ -764,7 +875,7 @@ export default {
   },
   _loadPic (url) {
     return new Promise(function (pass, fall) {
-      var img = new Image()
+      let img = new Image()
       img.onload = pass()
       img.onerrof = fall()
       if (url.includes('http')) {
