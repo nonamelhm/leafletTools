@@ -690,69 +690,73 @@ export default {
     if (!map) return;
     let _this = this;
     let allTargetOptions = Object.assign(this.trackplayOptions, options);
-    this._loadPic(allTargetOptions.imgUrl).then(() => {
-      // 画出轨迹的起点终点停止点 判断数据是单轨迹还是多轨迹
-      _this.tracklineLayers = [];
-      data.forEach((item, index) => {
-        if (!Array.isArray(item)) { //单轨迹画出轨迹  显示里程
-          let latlngs = []
-          for (var p of data) {
-            latlngs.push([p.lat, p.lng])
-          }
-          _this.tracklineLayers.push(L.polyline(latlngs, allTargetOptions).addTo(map));
-        } else { //多轨迹画出轨迹  不显示里程
-          let latlngs = []
-          for (var p of item) {
-            latlngs.push([p.lat, p.lng])
-          }
-          _this.tracklineLayers.push(L.polyline(latlngs, { ...allTargetOptions, color: manyLineColor[index] ? manyLineColor[index] : 'green' }).addTo(map));
+    // 画出轨迹的起点终点停止点 判断数据是单轨迹还是多轨迹
+    // _this.tracklineLayers = [];
+    if (!map.hasLayer(_this.mapControl['trackplay'])) {
+      _this.mapControl['trackplay'] = L.layerGroup().addTo(map);
+    }
+    data.forEach((item, index) => {
+      if (!Array.isArray(item)) { //单轨迹画出轨迹  显示里程
+        let latlngs = []
+        for (var p of data) {
+          latlngs.push([p.lat, p.lng])
         }
-      })
-      _this.trackplay = L.trackplayback(data, map, {
-        targetOptions: { ...allTargetOptions },
-        trackLineOptions: {
-          isDraw: allTargetOptions.isDrawLine, // 是否画线
-          stroke: true,
-          color: allTargetOptions.color, // 线条颜色
-          weight: 2, // 线条宽度
-          opacity: 1, // 透明度
-          wakeTimeDiff: allTargetOptions.wakeTimeDiff// 尾迹时间控制 不传默认一年
+        // _this.tracklineLayers.push(L.polyline(latlngs, allTargetOptions).addTo(map));
+        _this.drawList[index] = L.polyline(latlngs, allTargetOptions).addTo(map);
+      } else { //多轨迹画出轨迹  不显示里程
+        let latlngs = []
+        for (var p of item) {
+          latlngs.push([p.lat, p.lng])
         }
-      })
-      _this.trackplaybackControl = L.trackplaybackcontrol(_this.trackplay);
-      _this.trackplaybackControl.addTo(map);
+        _this.drawList[index] = L.polyline(latlngs, { ...allTargetOptions, color: manyLineColor[index] ? manyLineColor[index] : 'green' }).addTo(map);
+        // _this.tracklineLayers.push(L.polyline(latlngs, { ...allTargetOptions, color: manyLineColor[index] ? manyLineColor[index] : 'green' }).addTo(map));
+      }
+      _this.mapControl['trackplay'].addLayer(_this.drawList[index]);
     })
-  },
-  _startTrack () {//默认绘制路线
-    setTimeout(() => {
-      // document.querySelectorAll('.trackplayback-input')[1].checked = isDrawLine;  // 画线
-      let btn = document.querySelectorAll(".buttonContainer .btn-stop")[0];
-      if (btn) btn.click();//开始预览
-    }, 100)
-  },
-  _setTrackSpeed (speed) {//设置速度
-    this.trackplay.setSpeed(speed);
-  },
-  _clearTrackBack (map) {//清除
-    if (!map) return;
-    this.tracklineLayers.forEach((e) => { //清除线条
-      if (map.hasLayer(e)) {
-        map.removeLayer(e);
+
+    _this.trackplay = L.trackplayback(data, map, {
+      targetOptions: { ...allTargetOptions },
+      trackLineOptions: {
+        isDraw: allTargetOptions.isDrawLine, // 是否画线
+        stroke: true,
+        color: allTargetOptions.color, // 线条颜色
+        weight: 2, // 线条宽度
+        opacity: 1, // 透明度
+        wakeTimeDiff: allTargetOptions.wakeTimeDiff// 尾迹时间控制 不传默认一年
       }
     })
-    if (document.querySelector(".buttonContainer .btn-close")) {
-      document.querySelector(".buttonContainer .btn-close").click(); //删除轨迹
-    }
+    _this.trackplaybackControl = L.trackplaybackcontrol(_this.trackplay);
+    _this.trackplaybackControl.addTo(map);
+    _this.map.addLayer(this.mapControl['trackplay']);
+    return _this.trackplay;
   },
-  _restartTrack () {//刷新
-    if (document.querySelector(".buttonContainer .btn-restart")) {
-      document.querySelector(".buttonContainer .btn-restart").click(); //重新开始
-    }
+  _startTrack (trackplay) {//默认绘制路线
+    if (!trackplay) return;
+    trackplay.start();
   },
-  _quitTrack () { //暂停
-    if (document.querySelector(".buttonContainer .btn-start")) {
-      document.querySelector(".buttonContainer .btn-start").click(); //重新开始
+  _setTrackSpeed (trackplay, speed) {//设置速度
+    if (!trackplay) return;
+    trackplay.setSpeed(speed);
+  },
+  _clearTrackBack (map, trackplay) {//清除
+    if (!map) return;
+    if (!trackplay) return;
+    if (map.hasLayer(this.mapControl['trackplay'])) {
+      this._clearLayer(map, 'trackplay');//清除轨迹线图层
     }
+    trackplay.dispose();
+  },
+  _restartTrack (trackplay) {//刷新
+    trackplay.rePlaying();
+  },
+  _quitTrack (trackplay) {//停止
+    trackplay.stop();
+  },
+  _getCurrentSpeed (trackplay) {
+    return trackplay.getSpeed();
+  },
+  _getCurrentTime (trackplay) {
+    return trackplay.getCurTime();
   },
   _clearAllEdit (map) {
     if (!map) return;

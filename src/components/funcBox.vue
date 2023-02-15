@@ -36,7 +36,6 @@
 <script>
   import hl from '@/plugins/hlLeaflet.js'
   // import leaf from 'leaflettools'
-  // import { testData } from '@/plugins/test.js';
   export default {
     name: 'funcBox',
     data () {
@@ -58,7 +57,8 @@
         isArea: false,
         isDrawing: false,
         isStop: false,
-        measureUnit: ''
+        measureUnit: '',
+        trackplay: {},
       }
     },
     props: {
@@ -275,23 +275,25 @@
               { "lng": 136.98611666666667, "lat": 32.88173333333334, "speed": 134, "point": 3, "time": 1676459023, "dir": 142.7, "heading": 139, "info": [] }
             ]
           ]
-          hl._trackPlay(this.map, testData, { isDrawLine: false });
-          hl._startTrack();
+          this.trackplay = hl._trackPlay(this.map, testData, { isDrawLine: false });
+          hl._startTrack(this.trackplay);
         } else {//  清除轨迹
-          hl._clearTrackBack(this.map);
+          hl._clearTrackBack(this.map, this.trackplay);
         }
       },
       quitTrack () {
         this.isStop = !this.isStop;
-        if (this.isStop) { hl._quitTrack(); } else {
-          hl._startTrack();
+        if (this.isStop) {
+          hl._quitTrack(this.trackplay);
+        } else {
+          hl._startTrack(this.trackplay);
         }
       },
       setSpeed (speed) {
-        hl._setTrackSpeed(speed);
+        hl._setTrackSpeed(this.trackplay, speed);
       },
       restartTrack () {
-        hl._restartTrack();
+        hl._restartTrack(this.trackplay);
       }
     },
 
