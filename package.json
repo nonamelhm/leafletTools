@@ -9,7 +9,8 @@
     "url": "https://github.com/nonamelhm/leafletTools.git"
   },
   "keywords": [
-    "leaflet map"
+    "leaflet 工具",
+    "map 地图"
   ],
   "author": "lhm",
   "scripts": {
