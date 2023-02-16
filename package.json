@@ -1,6 +1,6 @@
 {
   "name": "leaflettools",
-  "version": "1.1.0",
+  "version": "1.0.1",
   "private": false,
   "description": "帮助解决基本的leaflet使用问题",
   "main": "./src/plugins/hlLeaflet.js",

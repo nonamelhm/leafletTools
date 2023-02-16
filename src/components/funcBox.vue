@@ -36,7 +36,6 @@
 </template>
 <script>
   import { HlLeaflet as hl } from '@/plugins/hlLeaflet.js'
-  // import leaf from 'leaflettools'
   export default {
     name: 'funcBox',
     data () {

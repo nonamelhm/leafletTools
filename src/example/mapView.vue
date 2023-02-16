@@ -7,7 +7,6 @@
 </template>
 <script>
   import { HlLeaflet as hl } from '@/plugins/hlLeaflet.js'
-  // import leaf from 'leaflettools'
   import funcBox from '@/components/funcBox.vue'
   export default {
     name: 'mapView',
