@@ -16,9 +16,9 @@ import "leaflet.markercluster";
 import 'leaflet-semicircle';// 半圆
 import "../assets/less/leaflet/leaflet.less"; //引入聚合点样式
 import "@/assets/js/leaflet-heatmap.js"; //引入热力图
-import '@/assets/js/trackback/control.playback.css';//引入多轨迹css
-import '@/assets/js/trackback/control.trackplayback';//引入多轨迹控制
-import '@/assets/js/trackback/leaflet.trackplayback';//引入多轨迹
+import '@/assets/js/trackback/control.playback.css';//引入轨迹回放css
+import '@/assets/js/trackback/control.trackplayback';//引入轨迹回放控制
+import '@/assets/js/trackback/leaflet.trackplayback';//引入轨迹回放
 import '@/assets/js/trackback/rastercoords';// 定向地图
 import dayjs from 'dayjs';
 import { latLonTransform } from '@/utils/util';
@@ -781,7 +781,7 @@ export default {
             if (info) {
               L.popup({ offset: [0, 0], className: 'hlleaflet-marker-popup' })
                 .setLatLng([e.sourceTarget._latlng.lat, e.sourceTarget._latlng.lng])
-                .setContent(`${info.showMsg}`)
+                .setContent(`${info}`)
                 .openOn(map);
             }
           })
@@ -807,7 +807,10 @@ export default {
           // 画出起点终点停止点等等
           _this._drawTrackPoint(map, data, allTargetOptions);
         }
-        _this.drawList[index] = L.polyline(latlngs, allTargetOptions).addTo(map);
+        if (!allTargetOptions.isDrawLine) {
+          _this.drawList[index] = L.polyline(latlngs, allTargetOptions).addTo(map);
+        }
+
       } else { //多轨迹画出轨迹  不显示里程
         let latlngs = []
         for (let p of item) {
@@ -815,12 +818,14 @@ export default {
           // 画出起点终点停止点等等
           _this._drawTrackPoint(map, item, allTargetOptions);
         }
-
-        _this.drawList[index] = L.polyline(latlngs, { ...allTargetOptions, color: manyLineColor[index] ? manyLineColor[index] : 'green' }).addTo(map);
+        if (!allTargetOptions.isDrawLine) {
+          _this.drawList[index] = L.polyline(latlngs, { ...allTargetOptions, color: manyLineColor[index] ? manyLineColor[index] : 'green' }).addTo(map);
+        }
       }
-      _this.mapControl['trackplay'].addLayer(_this.drawList[index]);
+      if (!allTargetOptions.isDrawLine) {
+        _this.mapControl['trackplay'].addLayer(_this.drawList[index]);
+      }
     })
-
     _this.trackplay = L.trackplayback(data, map, {
       targetOptions: { ...allTargetOptions },
       trackLineOptions: {
@@ -834,7 +839,7 @@ export default {
     })
     _this.trackplaybackControl = L.trackplaybackcontrol(_this.trackplay);
     _this.trackplaybackControl.addTo(map);
-    _this.map.addLayer(this.mapControl['trackplay']);
+    // _this.map.addLayer(this.mapControl['trackplay']);
     return _this.trackplay;
   },
   _startTrack (trackplay) {//默认绘制路线
@@ -858,6 +863,12 @@ export default {
   },
   _quitTrack (trackplay) {//停止
     trackplay.stop();
+  },
+  _showTrackLine (trackplay) {
+    trackplay.showTrackLine();
+  },
+  _hideTrackLine (trackplay) {
+    trackplay.hiderackLine();
   },
   _getCurrentSpeed (trackplay) {
     return trackplay.getSpeed();

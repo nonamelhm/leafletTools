@@ -1,4 +1,4 @@
-import { transformTime } from '@/utils/util'
+import { transformTime } from '@/utils/util';
 !(function (t, i) {
   if ('object' == typeof exports && 'object' == typeof module)
     module.exports = i(require('leaflet'))
@@ -463,16 +463,18 @@ import { transformTime } from '@/utils/util'
               e.addTo(this._map),
               e.setContent(this._getTooltipText(t))
           },
+
           _drawTrack: function (t) {
+            this._showTrackLine && this._drawTrackLine(t);//是否画线
             let i = t[t.length - 1];
             if (t[t.length - 2]) {
-              this.currentPlaySpeed = t[t.length - 2].speed ? t[t.length - 2].speed : ''
-              this.currentPlayPower = t[t.length - 2].power ? t[t.length - 2].power : ''
-              this.currentPlayStatus = t[t.length - 2].status ? t[t.length - 2].status : ''
-              this.currentPlayGsm = t[t.length - 2].gsm ? t[t.length - 2].gsm : ''
-              this.currentPlayGps = t[t.length - 2].gps ? t[t.length - 2].gps : ''
-              this.currentPlayHeight = t[t.length - 2].height ? t[t.length - 2].height : ''
-              this.currentPlayDistant = t[t.length - 2].distant ? t[t.length - 2].distant : ''
+              this.currentPlaySpeed = t[t.length - 2].speed
+              this.currentPlayPower = t[t.length - 2].power
+              this.currentPlayStatus = t[t.length - 2].status
+              this.currentPlayGsm = t[t.length - 2].gsm
+              this.currentPlayGps = t[t.length - 2].gps
+              this.currentPlayHeight = t[t.length - 2].height
+              this.currentPlayDistant = t[t.length - 2].distant
               this.currentPlayTime = transformTime(t[t.length - 2].time * 1000).substr(0, 16)
             } else {
               this.currentPlaySpeed = 0
@@ -559,22 +561,8 @@ import { transformTime } from '@/utils/util'
               this._ctx.stroke(),
               this._ctx.restore()
           },
-          // _drawShipImage: function (t, b, speed, power, gsm, gps, height, isDir, time) {
-          // let i = this._getLayerPoint(t),
-          //   e = t.dir || 0,
-          //   s = this.targetOptions.width,
-          //   n = this.targetOptions.height,
-          //   r = s / 2,
-          //   a = n / 2
-          // this._ctx.save(),
-          //   this._ctx.translate(i.x, i.y),
-          //   this._ctx.rotate((Math.PI / 180) * e),
-          //   this._ctx.drawImage(this._targetImg, 0 - r, 0 - a, s, n),
-          //   this._ctx.restore()
-
-          // },
           _drawShipImage: function (t, b, speed, power, gsm, gps, height, isDir, time) {
-            // if (this.targetOptions.replayType) {
+
             // console.log(time)
             this.getCurrentPlaySpeed = speed
             this.getCurrentPlayPower = power
@@ -658,30 +646,6 @@ import { transformTime } from '@/utils/util'
             }
             this._ctx.drawImage(image, 0 - r, 0 - a, s, n),
               this._ctx.restore()
-            // } else {
-            //   let i = this._getLayerPoint(t), e = t.dir || 0, s = this.targetOptions.width, n = this.targetOptions.height,
-            //     r = s / 2, a = n / 2;
-
-            //   let color = b[0].color ? b[0].color : '#3a352';
-            //   this._ctx.save(),
-            //     this._ctx.beginPath(),
-            //     this._ctx.strokeStyle = "#fff",
-            //     this._ctx.arc(i.x, i.y, r - 2, 0, Math.PI * 2, true),
-            //     this._ctx.closePath(),
-            //     this._ctx.fillStyle = color,
-            //     this._ctx.fill(),
-            //     this._ctx.restore(),
-            //     this._ctx.save(),
-            //     this._ctx.font = "12px Verdana",
-            //     this._ctx.textAlign = "center",
-            //     this._ctx.textBaseline = "top",
-            //     this._ctx.lineWidth = 4,
-            //     this._ctx.strokeStyle = "#fff",
-            //     this._ctx.strokeText(b[0].label, i.x, i.y + r + r / 2, 200),
-            //     this._ctx.fillStyle = color, this._ctx.fillText('hello', i.x, i.y + r + r / 2, 100),//fillText 填充内容
-            //     this._ctx.restore(),
-            //     this._ctx.save()
-            // }
           },
           _getTooltipText: function (t) {
             let i = []

@@ -56,7 +56,7 @@
         isMeasure: false,
         isArea: false,
         isDrawing: false,
-        isStop: false,
+        isStop: true,
         measureUnit: '',
         trackplay: {},
       }
@@ -276,7 +276,6 @@
             ]
           ]
           this.trackplay = hl._trackPlay(this.map, testData, { isDrawLine: false });
-          hl._startTrack(this.trackplay);
         } else {//  清除轨迹
           hl._clearTrackBack(this.map, this.trackplay);
         }
