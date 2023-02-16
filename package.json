@@ -4,6 +4,14 @@
   "private": false,
   "description": "帮助解决基本的leaflet使用问题",
   "main": "./src/plugins/hlLeaflet.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nonamelhm/leafletTools.git"
+  },
+  "keywords": [
+    "leaflet map"
+  ],
+  "author": "lhm",
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
