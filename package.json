@@ -16,7 +16,7 @@
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
-    "lib": "vue-cli-service build --target lib --name leaflettools --dest lib ./src/plugins/hlLeaflet.js"
+    "lib": "vue-cli-service build --target lib --name HL --dest lib ./src/plugins/hlLeaflet.js"
   },
   "dependencies": {
     "core-js": "^3.8.3",

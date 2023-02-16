@@ -1,1 +1,24 @@
-<!doctype html><meta charset="utf-8"><title>leafletmap demo</title><script src="./leafletmap.umd.js"></script><link rel="stylesheet" href="./leafletmap.css"><script>console.log(leafletmap)</script>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HL demo</title>
+  <script src="./HL.umd.js"></script>
+  <link rel="stylesheet" href="./HL.css">
+
+</head>
+
+<body>
+  <div id="map" style="width:800px;height:800px"></div>
+  <script>
+    let hl = HL.hlLeaflet();
+    let map = hl._initMap("map", { lat: 24, lon: 110, zoom: 4 });
+    let list = [{ lat: 24, lng: 110 }, { lat: 32, lng: 112 }, { lat: 21, lng: 113 }]
+    hl._drawLineByData(map, list, 'polyline', { color: 'blue', weight: 2, showDistance: true })
+    //....省略更多功能
+  </script>
+</body>
+
+</html>

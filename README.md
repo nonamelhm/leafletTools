@@ -8,6 +8,50 @@
 
 # 二、需求说明和实现
 
+## 引入
+
+### npm方式
+
+```javascript
+  import { HlLeaflet as hl } from '@/plugins/hlLeaflet.js'
+```
+
+### script方式(lib文件夹下HL.umd.js  HL.css)
+
+```javascript
+ <script src="./HL.umd.js"></script>
+ <link rel="stylesheet" href="./HL.css">
+```
+
+调用示例(完整代码）：
+
+```javascript
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HL demo</title>
+  <script src="./HL.umd.js"></script>
+  <link rel="stylesheet" href="./HL.css">
+
+</head>
+
+<body>
+  <div id="map" style="width:600px;height:600px;margin:auto;"></div>
+  <script>
+    let hl = HL.hlLeaflet();
+    let map = hl._initMap("map", { lat: 24, lon: 110, zoom: 4 });
+    let list = [{ lat: 24, lng: 110 }, { lat: 32, lng: 112 }, { lat: 21, lng: 113 }]
+    hl._drawLineByData(map, list, 'polyline', { color: 'blue', weight: 2, showDistance: true })
+    //....省略更多功能
+  </script>
+</body>
+
+</html>
+```
+
 ## 1、地图初始化
 
 实现（属性）

@@ -27,7 +27,7 @@ import { latLonTransform } from '@/utils/util';
  * 完成项目中基本绘制的工作
  */
 
-export default {
+export const HlLeaflet = {
   nodeRandom: 6,
   baseLayers: {},
   tempSortKey: [],
@@ -233,7 +233,6 @@ export default {
         }
       }
     }
-    map.fitBounds(fitData, options);
   },
   _fitPoint (map, pointData) {
     if (!map) return;
@@ -289,7 +288,6 @@ export default {
     this.drawList = L.polyline(latlngs, allOptions);
     this.mapControl[layersName].addLayer(this.drawList);
     map.addLayer(this.mapControl[layersName]);
-    this._fitBounds(map, data)
   },
   _drawTips (map, latlng, layersName = 'defaultTipsLayers', options) {
     if (!map) return;
@@ -353,7 +351,6 @@ export default {
       })
     }
     map.addLayer(this.mapControl[layersName]);
-    this._fitBounds(map, data);
   },
   _addTipInPattern (map, layers) {
     if (!map) return;
@@ -663,10 +660,6 @@ export default {
         }
       }
     }
-    this._fitBounds(map, data, {
-      padding: [10, 10],
-      maxZoom: 17
-    });
   },
   _windCircle (map, data, allWindOptions) {
     if (!map) return;
@@ -897,4 +890,6 @@ export default {
     })
   }
 }
-
+export const hlLeaflet = function () {
+  return HlLeaflet;
+}

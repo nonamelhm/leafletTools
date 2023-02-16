@@ -6,7 +6,7 @@
   </div>
 </template>
 <script>
-  import hl from '@/plugins/hlLeaflet.js'
+  import { HlLeaflet as hl } from '@/plugins/hlLeaflet.js'
   // import leaf from 'leaflettools'
   import funcBox from '@/components/funcBox.vue'
   export default {
@@ -15,6 +15,7 @@
       funcBox
     },
     mounted () {
+      console.log(hl)
       this.map = hl._initMap("map", { lat: 24, lon: 110, zoom: 8 });
       //鼠标移动位置
       if (this.map) {

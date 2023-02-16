@@ -6,7 +6,7 @@
   </div>
 </template>
 <script>
-  import hl from '@/plugins/hlLeaflet.js'
+  import { HlLeaflet as hl } from '@/plugins/hlLeaflet.js'
   import funcBox from '@/components/funcBox.vue'
   export default {
     name: 'testView',
