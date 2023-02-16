@@ -233,6 +233,7 @@ export const HlLeaflet = {
         }
       }
     }
+    map.fitBounds(fitData, options);
   },
   _fitPoint (map, pointData) {
     if (!map) return;
@@ -266,6 +267,7 @@ export const HlLeaflet = {
         this.mapControl[layersName].addLayer(this.pointList[i])
       });
       map.addLayer(this.mapControl[layersName]);
+      this._fitBounds(map, data);
     })
   },
   _clearLayer (map, layersName) {
@@ -288,6 +290,7 @@ export const HlLeaflet = {
     this.drawList = L.polyline(latlngs, allOptions);
     this.mapControl[layersName].addLayer(this.drawList);
     map.addLayer(this.mapControl[layersName]);
+    this._fitBounds(map, data);
   },
   _drawTips (map, latlng, layersName = 'defaultTipsLayers', options) {
     if (!map) return;
@@ -351,6 +354,7 @@ export const HlLeaflet = {
       })
     }
     map.addLayer(this.mapControl[layersName]);
+    this._fitBounds(map, data);
   },
   _addTipInPattern (map, layers) {
     if (!map) return;
@@ -640,6 +644,7 @@ export const HlLeaflet = {
     let hotLayers = L.heatLayer(heatPoints, options);
     this.mapControl[layersName].addLayer(hotLayers);
     map.addLayer(this.mapControl[layersName]);
+    this._fitBounds(map, data);
   },
   _fullScreen (map) {
     if (!map) return;
@@ -681,6 +686,7 @@ export const HlLeaflet = {
         this.windCircleLayers.push(L.semiCircle([p.lat, p.lng], { radius: p.nwRadius * 1000, ...allWindOptions }).addTo(map));
       }
     }
+    this._fitBounds(map, data);
   },
   _clearWindCircle (map) {
     if (!map) return;
@@ -783,6 +789,7 @@ export const HlLeaflet = {
       }
       map.addLayer(this.mapControl[layersName]);
     })
+    this._fitBounds(map, MarkersList);
   },
   _trackPlay (map, data, options, manyLineColor = ['red', 'blue', 'yellow', 'orange', 'pink']) { //轨迹回放 lineColor多轨迹线条颜色
     if (!map) return;
