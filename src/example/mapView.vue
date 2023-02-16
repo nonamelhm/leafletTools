@@ -14,7 +14,6 @@
       funcBox
     },
     mounted () {
-      console.log(hl)
       this.map = hl._initMap("map", { lat: 24, lon: 110, zoom: 8 });
       //鼠标移动位置
       if (this.map) {

@@ -1,5 +1,5 @@
 import 'leaflet/dist/leaflet.css';
-import '../assets/css/hlLeaflet.css';// 测面积
+import '../assets/css/hlLeaflet.css';// 自定义样式 聚合点测、面积
 import L from 'leaflet';
 import '../assets/css/Leaflet.PolylineMeasure.css'// 画线框架
 import 'leaflet.pm/dist/leaflet.pm.css';
@@ -14,7 +14,6 @@ import "leaflet.fullscreen";
 import "leaflet.markercluster/dist/MarkerCluster.css";
 import "leaflet.markercluster";
 import 'leaflet-semicircle';// 半圆
-import "../assets/less/leaflet/leaflet.less"; //引入聚合点样式
 import "../assets/js/leaflet-heatmap.js"; //引入热力图
 import '../assets/js/trackback/control.playback.css';//引入轨迹回放css
 import '../assets/js/trackback/control.trackplayback';//引入轨迹回放控制
@@ -267,7 +266,6 @@ export const HlLeaflet = {
         this.mapControl[layersName].addLayer(this.pointList[i])
       });
       map.addLayer(this.mapControl[layersName]);
-      this._fitBounds(map, data);
     })
   },
   _clearLayer (map, layersName) {
@@ -290,7 +288,6 @@ export const HlLeaflet = {
     this.drawList = L.polyline(latlngs, allOptions);
     this.mapControl[layersName].addLayer(this.drawList);
     map.addLayer(this.mapControl[layersName]);
-    this._fitBounds(map, data);
   },
   _drawTips (map, latlng, layersName = 'defaultTipsLayers', options) {
     if (!map) return;
@@ -644,7 +641,6 @@ export const HlLeaflet = {
     let hotLayers = L.heatLayer(heatPoints, options);
     this.mapControl[layersName].addLayer(hotLayers);
     map.addLayer(this.mapControl[layersName]);
-    this._fitBounds(map, data);
   },
   _fullScreen (map) {
     if (!map) return;
