@@ -19,6 +19,7 @@
       <li @click="editMarkerGetData()">{{iseditMarkerGetData ? '清除绘点' : '直接绘点' }}</li>
       <li @click="trackBack()">{{isTrackBack ? '清除轨迹' : '轨迹回放' }}</li>
       <li @click="quitTrack()">{{isStop?'开启轨迹回放':'暂停轨迹回放'}}</li>
+      <li @click="showHideTrack()">{{isShowTrackLine?'取消运动时轨迹画线':'运动时轨迹画线'}}</li>
       <li @click="setTrackSpeed(10)">设置轨迹回放速度为10</li>
       <li @click="restartTrack()">刷新轨迹回放</li>
       <li @click="changeLayers(1)">切换天地图卫星图</li>
@@ -59,6 +60,7 @@
         isStop: true,
         measureUnit: '',
         trackplay: {},
+        isShowTrackLine: false
       }
     },
     props: {
@@ -286,6 +288,14 @@
           hl._quitTrack(this.trackplay);
         } else {
           hl._startTrack(this.trackplay);
+        }
+      },
+      showHideTrack () {
+        this.isShowTrackLine = !this.isShowTrackLine;
+        if (this.isShowTrackLine) {
+          hl._showTrackLine(this.trackplay);
+        } else {
+          hl._hideTrackLine(this.trackplay);
         }
       },
       setSpeed (speed) {

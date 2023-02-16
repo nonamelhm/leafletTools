@@ -868,7 +868,7 @@ export default {
     trackplay.showTrackLine();
   },
   _hideTrackLine (trackplay) {
-    trackplay.hiderackLine();
+    trackplay.hideTrackLine();
   },
   _getCurrentSpeed (trackplay) {
     return trackplay.getSpeed();
