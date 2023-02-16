@@ -39,3 +39,38 @@ export function latLonTransform (latLon, flag) {
   }
   return newLatLon
 }
+
+// 经纬度转化为度分秒
+export function changeToDFM (value) {
+  if (String(value).includes('.')) {
+    let str1 = String(value).split(".")
+    let du1 = str1[0]
+    let tp = "0." + str1[1]
+    tp = String((tp * 60).toFixed(3))	//这里进行了强制类型转换
+    let str2 = tp.split(".")
+    let fen = str2[0]
+    tp = "0." + str2[1]
+    tp = tp * 60
+    let miao = tp.toFixed(3)
+    return `${du1}°${fen}'${miao}"`
+  } else {
+    let du1 = value
+    let fen = 0
+    let miao = 0
+    return `${du1}°${fen}'${miao}"`
+  }
+}
+// 经纬度转换成为度分
+export function changeToDF (value) {
+  if (String(value).includes('.')) {
+    let str = String(value).split(".")
+    let du = str[0]
+    let tp = "0." + str[1]
+    let fen = (tp * 60).toFixed(5)
+    return `${du}°${fen}'`
+  } else {
+    let du = value
+    let fen = 0
+    return `${du}°${fen}'`
+  }
+}

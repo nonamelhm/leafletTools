@@ -1,4 +1,4 @@
-import { transformTime } from '@/utils/util';
+import { transformTime } from '../../../utils/util';
 !(function (t, i) {
   if ('object' == typeof exports && 'object' == typeof module)
     module.exports = i(require('leaflet'))

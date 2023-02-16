@@ -1,10 +1,10 @@
 import 'leaflet/dist/leaflet.css';
-import '@/assets/css/hlLeaflet.css';// 测面积
+import '../assets/css/hlLeaflet.css';// 测面积
 import L from 'leaflet';
-import '@/assets/css/Leaflet.PolylineMeasure.css'// 画线框架
+import '../assets/css/Leaflet.PolylineMeasure.css'// 画线框架
 import 'leaflet.pm/dist/leaflet.pm.css';
 import 'leaflet.pm';
-import '@/assets/js/Leaflet.PolylineMeasure.js';
+import '../assets/js/Leaflet.PolylineMeasure.js';
 import 'leaflet-measure/dist/leaflet-measure.css';// 测面积
 import 'leaflet-measure/dist/leaflet-measure.cn';
 import calc from 'leaflet-measure/src/calc'
@@ -15,13 +15,13 @@ import "leaflet.markercluster/dist/MarkerCluster.css";
 import "leaflet.markercluster";
 import 'leaflet-semicircle';// 半圆
 import "../assets/less/leaflet/leaflet.less"; //引入聚合点样式
-import "@/assets/js/leaflet-heatmap.js"; //引入热力图
-import '@/assets/js/trackback/control.playback.css';//引入轨迹回放css
-import '@/assets/js/trackback/control.trackplayback';//引入轨迹回放控制
-import '@/assets/js/trackback/leaflet.trackplayback';//引入轨迹回放
-import '@/assets/js/trackback/rastercoords';// 定向地图
+import "../assets/js/leaflet-heatmap.js"; //引入热力图
+import '../assets/js/trackback/control.playback.css';//引入轨迹回放css
+import '../assets/js/trackback/control.trackplayback';//引入轨迹回放控制
+import '../assets/js/trackback/leaflet.trackplayback';//引入轨迹回放
+import '../assets/js/trackback/rastercoords';// 定向地图
 import dayjs from 'dayjs';
-import { latLonTransform } from '@/utils/util';
+import { latLonTransform } from '../utils/util';
 /**
  * leaflet地图绘制类
  * 完成项目中基本绘制的工作
@@ -61,7 +61,7 @@ export const HlLeaflet = {
     weight: 1,
     useImg: true,
     color: '#03ff09',
-    imgUrl: require("@/assets/images/leaflet_icon/trackplay-icon.png"),
+    imgUrl: require("../assets/images/leaflet_icon/trackplay-icon.png"),
     iconSize: [30, 30],
     iconAnchor: [20, 25],
     width: 40,
@@ -110,7 +110,7 @@ export const HlLeaflet = {
     color: 'red'
   },
   pointOptions: {
-    iconUrl: require("@/assets/images/leaflet_icon/marker-icon.png"),
+    iconUrl: require("../assets/images/leaflet_icon/marker-icon.png"),
     iconSize: [25, 41],
     spiderfyOnMaxZoom: false,
     showCoverageOnHover: false,
@@ -128,20 +128,20 @@ export const HlLeaflet = {
     weight: 2
   },
   trackPointImg: [
-    require('@/assets/images/leaflet_icon/tab_state_qidian.png'),// 起点 3
-    require('@/assets/images/leaflet_icon/tab_state_tingzhi.png'), // 停止点 2
-    require('@/assets/images/leaflet_icon/tab_state_zhongdian.png'), // 终点 4
-    require('@/assets/images/leaflet_icon/tab_state_lixian.png'), // 离线 5
-    require('@/assets/images/leaflet_icon/tab_state_sos.png'), // SOS 6
-    require('@/assets/images/leaflet_icon/tab_state_duandian.png'), // 断电 7
-    require('@/assets/images/leaflet_icon/tab_state_chaixie.png'), // 拆卸 8
-    require('@/assets/images/leaflet_icon/tab_state_jinru.png'), // 进入围栏 9
-    require('@/assets/images/leaflet_icon/tab_state_likai.png'), // 离开围栏 10
-    require('@/assets/images/leaflet_icon/tab_state_sudu.png'), // 超速 11
-    require('@/assets/images/leaflet_icon/tab_state_didianliang.png'), // 低电量 12
-    require('@/assets/images/leaflet_icon/tab_state_shangsheng.png'), // 高度上升 13
-    require('@/assets/images/leaflet_icon/tab_state_xiajiang.png'), // 高度下降 14
-    require('@/assets/images/leaflet_icon/tab_state_haiba.png') // 海拔 15
+    require('../assets/images/leaflet_icon/tab_state_qidian.png'),// 起点 3
+    require('../assets/images/leaflet_icon/tab_state_tingzhi.png'), // 停止点 2
+    require('../assets/images/leaflet_icon/tab_state_zhongdian.png'), // 终点 4
+    require('../assets/images/leaflet_icon/tab_state_lixian.png'), // 离线 5
+    require('../assets/images/leaflet_icon/tab_state_sos.png'), // SOS 6
+    require('../assets/images/leaflet_icon/tab_state_duandian.png'), // 断电 7
+    require('../assets/images/leaflet_icon/tab_state_chaixie.png'), // 拆卸 8
+    require('../assets/images/leaflet_icon/tab_state_jinru.png'), // 进入围栏 9
+    require('../assets/images/leaflet_icon/tab_state_likai.png'), // 离开围栏 10
+    require('../assets/images/leaflet_icon/tab_state_sudu.png'), // 超速 11
+    require('../assets/images/leaflet_icon/tab_state_didianliang.png'), // 低电量 12
+    require('../assets/images/leaflet_icon/tab_state_shangsheng.png'), // 高度上升 13
+    require('../assets/images/leaflet_icon/tab_state_xiajiang.png'), // 高度下降 14
+    require('../assets/images/leaflet_icon/tab_state_haiba.png') // 海拔 15
   ],
   //轨迹回放配置
   _conf () {
@@ -517,7 +517,7 @@ export const HlLeaflet = {
     map.addControl(measureRules);
     document.querySelector(".js-start").click();
   },
-  _drawInMap (map, type, iconSize = [20, 20], iconUrl = require('@/assets/images/leaflet_icon/position-icon.png')) { //绘制在地图上
+  _drawInMap (map, type, iconSize = [20, 20], iconUrl = require('../assets/images/leaflet_icon/position-icon.png')) { //绘制在地图上
     if (!map) return;
     switch (type) {
       case 'marker':
@@ -531,7 +531,7 @@ export const HlLeaflet = {
       case '':
     }
   },
-  _editMarkerGetData (map, iconUrl = require("@/assets/images/leaflet_icon/position-icon.png"), iconSize = [20, 20], layersName = 'editingMarker') {
+  _editMarkerGetData (map, iconUrl = require("../assets/images/leaflet_icon/position-icon.png"), iconSize = [20, 20], layersName = 'editingMarker') {
     if (!map) return;
     this._clearAllEdit(map);
     // map.off('mousemove', this._onmousemoveEvt, this);
