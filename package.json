@@ -45,13 +45,6 @@
     "vue-template-compiler": "^2.6.14"
   },
   "peerDependencies":{
-    "core-js": "^3.8.3",
-    "dayjs": "^1.11.7",
-    "leaflet": "^1.7.0",
-    "leaflet-measure": "^3.1.0",
-    "leaflet-semicircle": "^2.0.4",
-    "leaflet.fullscreen": "^2.4.0",
-    "leaflet.markercluster": "^1.5.3",
-    "leaflet.pm": "^2.2.0"
+    "leaflet": "^1.7.0"
   }
 }
