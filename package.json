@@ -28,8 +28,7 @@
     "leaflet.fullscreen": "^2.4.0",
     "leaflet.markercluster": "^1.5.3",
     "leaflet.pm": "^2.2.0",
-    "less": "^4.1.3",
-    "less-loader": "^5.0.0",
+    "less-loader": "^11.1.0",
     "vue": "^2.6.14",
     "vue-router": "^3.5.1"
   },
@@ -44,5 +43,15 @@
     "eslint": "^7.32.0",
     "eslint-plugin-vue": "^8.0.3",
     "vue-template-compiler": "^2.6.14"
+  },
+  "peerDependencies":{
+    "core-js": "^3.8.3",
+    "dayjs": "^1.11.7",
+    "leaflet": "^1.7.0",
+    "leaflet-measure": "^3.1.0",
+    "leaflet-semicircle": "^2.0.4",
+    "leaflet.fullscreen": "^2.4.0",
+    "leaflet.markercluster": "^1.5.3",
+    "leaflet.pm": "^2.2.0"
   }
 }
