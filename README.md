@@ -325,6 +325,7 @@ _editMapGetData (map, type = 0, color = 'rgba(51, 136, 255, 1)', layersName = 'e
             //end 得到绘制时候经纬度
 
             hl._editMapGetData(this.map,0); //开始绘制多边形
+            hl._clearAllEdit(this.map);//取消绘制
 ```
 
 ## 9、测距

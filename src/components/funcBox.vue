@@ -173,12 +173,9 @@
         this.measureUnit = hl._getMeasureUnit(this.map);
       },
       area () {
-        let fn = function () {
-          alert('test')
-        }
         hl._mearsureArea(this.map);
         this.map.on('measurefinish', function (evt) { //监听绘画结束调用函数
-          if (fn) fn();
+          console.log('测量面积完毕')
         })
       },
       changeLayers (idx) {
