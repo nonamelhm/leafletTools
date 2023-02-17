@@ -1,6 +1,6 @@
 {
   "name": "leaflettools",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "private": false,
   "description": "帮助解决基本的leaflet使用问题",
   "main": "./src/plugins/hlLeaflet.js",
@@ -22,6 +22,7 @@
   "dependencies": {
     "core-js": "^3.8.3",
     "dayjs": "^1.11.7",
+    "leaflet": "^1.7.0",
     "leaflet-measure": "^3.1.0",
     "leaflet-semicircle": "^2.0.4",
     "leaflet.fullscreen": "^2.4.0",
@@ -43,7 +44,7 @@
     "eslint-plugin-vue": "^8.0.3",
     "vue-template-compiler": "^2.6.14"
   },
-  "peerDependencies:":{
-    "leaflet":"=1.7.0"
+  "peerDependencies:": {
+    "leaflet": "=1.7.0"
   }
 }
