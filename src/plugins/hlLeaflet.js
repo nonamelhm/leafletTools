@@ -374,6 +374,7 @@ export const HlLeaflet = {
   _measure (map) {
     if (!map) return;
     L.control.polylineMeasure({
+      clearMeasurementsOnStop: true,
       unitControlTitle: {
         // Title texts to show on the Unit Control button
         text: 'Change Units',
@@ -402,11 +403,17 @@ export const HlLeaflet = {
         nauticalmiles: '海里'
       },
     }).addTo(map)
-    document.querySelectorAll(`.leaflet-control`)[0].style.display = "none";
-    document.getElementById(`polyline-measure-control`).click();
+    let controlArr = document.querySelectorAll(`.leaflet-control`);
+    if (controlArr.length) {
+      controlArr.forEach(item => {
+        item.style.display = "none";
+      })
+      document.getElementById(`polyline-measure-control`).click();
+    }
   },
   _clearMeasure (map) {
     if (map) {
+      document.getElementById(`polyline-measure-control`).click(); //取消绘制
       document.querySelectorAll(`.polyline-measure-clearControl`)[0].click();
     }
   },
