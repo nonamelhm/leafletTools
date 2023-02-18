@@ -1,15 +1,24 @@
-<!DOCTYPE html>
 <html lang="en">
 
 <head>
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>test</title>
+  <title>HL demo</title>
+  <script src="https://cdn.jsdelivr.net/npm/leaflettools@1.0.7/lib/HL.umd.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflettools@1.0.7/lib/HL.css">
+
 </head>
 
 <body>
-  test一下
+  <div id="map" style="width:600px;height:600px;margin:auto;"></div>
+  <script>
+    let hl = HL.hlLeaflet();
+    let map = hl._initMap("map", { lat: 24, lon: 110, zoom: 4 });
+    let list = [{ lat: 24, lng: 110 }, { lat: 32, lng: 112 }, { lat: 21, lng: 113 }]
+    hl._drawLineByData(map, list, 'polyline', { color: 'blue', weight: 2, showDistance: true })
+    //....省略更多功能
+  </script>
 </body>
 
 </html>
