@@ -1,14 +1,28 @@
 # LeafletTools
 
-# **一、开发参考**
+## 一、开发参考
 
 1）leaflet官网：https://leafletjs.cn/
 
 2）使用地图平台：天地图、谷歌
 
-# 二、需求说明和实现
+## 二、示例
 
-## 引入
+- [点击查看demo]: https://nonamelhm.github.io/leafletTools/
+
+- [下载代码运行示例]: https://github.com/nonamelhm/leafletTools.git
+
+```javascript
+yarn 或  npm i
+yarn serve 或  npm run serve
+```
+
+## 三、要求
+
+- leaflet version: 1.7.0 (高版本的调整可能会出现不适用情况导致bug)（PS:当然,npm i leaflettools即可一键下载leaflet,不用再次安装)
+- 参考leaflet官网得到更多配置知识，这里的配置不一一列举
+
+## 四、使用
 
 ### npm方式
 
@@ -17,43 +31,25 @@ npm i leaflettools;
 import { HlLeaflet as hl } from '@/plugins/hlLeaflet.js';
 ```
 
-### script方式(lib文件夹下HL.umd.js  HL.css)
+### script标签方式
+
+- 通过CDN方式
+
+```javascript
+  <script src="https://cdn.jsdelivr.net/npm/leaflettools@1.0.7/lib/HL.umd.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflettools@1.0.7/lib/HL.css">
+```
+
+- 下载文件（github下载lib文件）
 
 ```javascript
  <script src="./HL.umd.js"></script>
  <link rel="stylesheet" href="./HL.css">
 ```
 
-调用示例(完整代码）：
+## 五、API及其功能参考
 
-```javascript
-<html lang="en">
-
-<head>
-  <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HL demo</title>
-  <script src="./HL.umd.js"></script>
-  <link rel="stylesheet" href="./HL.css">
-
-</head>
-
-<body>
-  <div id="map" style="width:600px;height:600px;margin:auto;"></div>
-  <script>
-    let hl = HL.hlLeaflet();
-    let map = hl._initMap("map", { lat: 24, lon: 110, zoom: 4 });
-    let list = [{ lat: 24, lng: 110 }, { lat: 32, lng: 112 }, { lat: 21, lng: 113 }]
-    hl._drawLineByData(map, list, 'polyline', { color: 'blue', weight: 2, showDistance: true })
-    //....省略更多功能
-  </script>
-</body>
-
-</html>
-```
-
-## 1、地图初始化
+### 1、地图初始化
 
 实现（属性）
 
@@ -90,7 +86,7 @@ map.on('mousemove',e=>{
 })
 ```
 
-## 2、普通绘点/聚合点
+### 2、普通绘点/聚合点
 
 例如：根据经纬度绘制船只 
 
@@ -135,7 +131,7 @@ hl._renderPoint(map, data, 'layers1', require("./marker-icon-2x.png"), true);//�
 hl._renderPoint(map, [{ lat: 25, lng: 110, showMsg: `显示内容2-25-110` }], 'layers2');
 ```
 
-## 3、数据绘制线
+### 3、数据绘制线
 
 实现（属性）：
 
@@ -173,7 +169,7 @@ let list = [{ lat: 24, lng: 110 }, { lat: 32, lng: 112 }, { lat: 21, lng: 113 }]
 hl._drawLineByData(map, list, 'polyline', { color: 'blue', weight: 1, showDistance: true })
 ```
 
-## 4、数据绘制矩形/圆形/多边形
+### 4、数据绘制矩形/圆形/多边形
 
 实现（属性）：
 
@@ -208,7 +204,7 @@ let list2 = [{ lat: 26, lng: 130, showMsg: 'hello222-rectangle' }, { lat: 26, ln
 hl._drawByData(map, list2, `rectangle`, 'rectangle', { color: 'red', weight: 1 });
 ```
 
-## 5、数据绘制风圈 
+### 5、数据绘制风圈 
 
 实现（属性）：
 
@@ -240,7 +236,7 @@ hl._drawByData(map, list2, `rectangle`, 'rectangle', { color: 'red', weight: 1 }
  hl._drawWindCircle(map, list);
 ```
 
-## 6、清除风圈
+### 6、清除风圈
 
 实现（属性）：
 
@@ -256,7 +252,7 @@ _clearWindCircle (map);
  hl._clearWindCircle(map);
 ```
 
-## 7、绘制图标
+### 7、直接绘制图标
 
 实现（属性）：
 
@@ -290,7 +286,7 @@ _editMarkerGetData (map, iconUrl = require("@/assets/images/leaflet_icon/positio
             hl._editMarkerGetData(map);
 ```
 
-## 8、绘制多边形/矩形/圆形
+### 8、直接绘制图形
 
 实现（属性）：
 
@@ -329,7 +325,7 @@ _editMapGetData (map, type = 0, color = 'rgba(51, 136, 255, 1)', layersName = 'e
             hl._clearAllEdit(this.map);//取消绘制
 ```
 
-## 9、测距
+### 9、测距
 
 实现（属性）：
 
@@ -351,7 +347,7 @@ hl._changeMeasureUnit(map)//改变测量单位
 let unit = hl._getMeasureUnit(map)//得到测量单位
 ```
 
-## 10、测面积
+### 10、测面积
 
 实现（属性）：
 
@@ -372,7 +368,7 @@ hl._mearsureArea(map);//开始测量面积
  })
 ```
 
-## 11、全屏
+### 11、全屏
 
 实现（属性）：
 
@@ -388,7 +384,7 @@ _fullScreen(map);
 hl._fullScreen(this.map);
 ```
 
-## 12、切换图层
+### 12、切换图层
 
 实现（属性）：
 
@@ -410,7 +406,7 @@ hl._changeLayers (map, 5);//切换谷歌地形图
 hl._changeLayers (map, 6);//切换谷歌街道图
 ```
 
-## 13、热力图
+### 13、热力图
 
 实现（属性）：
 
@@ -439,7 +435,7 @@ _drawHeatMap (map, data, layersName = 'hotLayers', options = { radius: 10, minOp
 hl._drawHeatMap(this.map, data, 'hotLayers');
 ```
 
-## 14、轨迹回放
+### 14、轨迹回放
 
 实现（属性）：
 
@@ -514,7 +510,7 @@ let time = hl._getCurrentTime(this.trackplay);//得到当前回放时间点
 let speed = hl._getCurrentSpeed(this.trackplay);//得到当前回放点速度
 ```
 
-## 15、适当放大预览
+### 15、适当放大预览
 
 实现（属性）：
 
@@ -542,7 +538,7 @@ _fitBounds(map, areaData, options = { padding: [10, 10], maxZoom: 17 })
 hl._fitBounds(this.map, data);
 ```
 
-## 16、清除图层
+### 16、清除图层
 
 实现（属性）：
 
@@ -559,7 +555,7 @@ _clearLayer (map, layersName)
 hl._clearLayer(this.map, 'hotLayers');//删除地图上图层名称为hotLayers的图层
 ```
 
-## 17、地图绘字
+### 17、地图绘字
 
 实现（属性）：
 
@@ -590,7 +586,7 @@ hl._clearLayer(this.map, 'hotLayers');//删除地图上图层名称为hotLayers�
   hl._drawTips(this.map, { lat: 24, lng: 110 }, 'tips', { html: '24小时警戒线' });
 ```
 
-## 18、将点设置为中心
+### 18、将点设置为中心
 
 实现（属性）：
 
@@ -608,7 +604,7 @@ hl._clearLayer(this.map, 'hotLayers');//删除地图上图层名称为hotLayers�
   hl._fitPoint(this.map, { lat: 24, lng: 110 }, 18);
 ```
 
-## 19、地图放大
+### 19、地图放大
 
 调用示例：
 
@@ -616,7 +612,7 @@ hl._clearLayer(this.map, 'hotLayers');//删除地图上图层名称为hotLayers�
 hl._zoomAdd(this.map);
 ```
 
-## 20、地图缩小
+### 20、地图缩小
 
 调用示例：
 ```javascript

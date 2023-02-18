@@ -181,14 +181,6 @@
       changeLayers (idx) {
         hl._changeLayers(this.map, idx);
       },
-      draw (type) {
-        hl._drawInMap(this.map, type, { iconUrl: require("@/assets/images/leaflet_icon/marker-icon.png"), iconSize: [10, 10] })
-        hl.map.on('pm:create', function (e) { //监听绘制
-          if (e.shape === 'Marker') {
-            console.log(e.marker._latlng)
-          }
-        })
-      },
       hotMap () {
         let data = [{
           lat: 35.460756,
@@ -316,6 +308,15 @@
 </script>
 <style lang="less" scoped>
   #funcBox {
+    position: fixed;
+    right: 0px;
+    width: 300px;
+    height: 600px;
+    z-index: 1000;
+    background-color: #fff;
+    margin: 15px;
+    overflow-y: scroll;
+
     ul {
       li {
         list-style: none;

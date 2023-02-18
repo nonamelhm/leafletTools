@@ -1,8 +1,8 @@
 <template>
   <div id="mapView">
-    <func-box style="width:1200px;margin: auto;" :map="map"></func-box>
+    <func-box :map="map"></func-box>
     <!-- map地图，需要指定宽度高度 -->
-    <div id="map" style="width:800px;height:500px;margin: auto;margin-bottom:20px;"></div>
+    <div id="map" style="width:100%;height:600px;margin: auto;"></div>
   </div>
 </template>
 <script>
@@ -14,7 +14,7 @@
       funcBox
     },
     mounted () {
-      this.map = hl._initMap("map", { lat: 24, lon: 110, zoom: 8 });
+      this.map = hl._initMap("map", { lat: 24, lon: 110, zoom: 4 });
       //鼠标移动位置
       if (this.map) {
         this.map.on('mousemove', e => {
