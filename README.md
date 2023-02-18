@@ -8,9 +8,8 @@
 
 ## 二、示例
 
-- [点击查看demo]: https://nonamelhm.github.io/leafletTools/
-
-- [下载代码运行示例]: https://github.com/nonamelhm/leafletTools.git
+- demo示例：https://nonamelhm.github.io/leafletTools/ 
+- 下载代码运行示例：https://github.com/nonamelhm/leafletTools.git 
 
 ```javascript
 yarn 或  npm i
