@@ -13,7 +13,8 @@
 ### npm方式
 
 ```javascript
-  import { HlLeaflet as hl } from '@/plugins/hlLeaflet.js'
+npm i leaflettools;
+import { HlLeaflet as hl } from '@/plugins/hlLeaflet.js';
 ```
 
 ### script方式(lib文件夹下HL.umd.js  HL.css)

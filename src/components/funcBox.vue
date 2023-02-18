@@ -199,9 +199,19 @@
           lng: 119.69847,
           count: 19
         }]
+        let data2 = [{
+          lat: 34.460756,
+          lng: 109.59847,
+          count: 19
+        }, {
+          lat: 31.560756,
+          lng: 112.69847,
+          count: 100
+        }]
         this.isHot = !this.isHot;
         if (this.isHot) {
           hl._drawHeatMap(this.map, data, 'hot');
+          hl._drawHeatMap(this.map, data2, 'hot');
         } else {
           hl._clearLayer(this.map, 'hot');
         }
