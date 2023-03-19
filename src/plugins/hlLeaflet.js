@@ -9,8 +9,8 @@ import 'leaflet-measure/dist/leaflet-measure.css';// 测面积
 import 'leaflet-measure/dist/leaflet-measure.cn';
 import calc from 'leaflet-measure/src/calc'
 import { selectOne as selectOne } from 'leaflet-measure/src/dom'
-import "leaflet.fullscreen/Control.FullScreen.css";
-import "leaflet.fullscreen";
+import "../assets/css/Control.FullScreen.css";
+import "../assets/js/Control.FullScreen.js";
 import "leaflet.markercluster/dist/MarkerCluster.css";
 import "leaflet.markercluster";
 import 'leaflet-semicircle';// 半圆
@@ -21,6 +21,23 @@ import '../assets/js/trackback/leaflet.trackplayback';//引入轨迹回放
 import '../assets/js/trackback/rastercoords';// 定向地图
 import dayjs from 'dayjs';
 import { latLonTransform } from '../utils/util';
+import pointImg from "../assets/images/leaflet_icon/marker-icon.png"
+import trackPng from "../assets/images/leaflet_icon/trackplay-icon.png";
+import qidian from '../assets/images/leaflet_icon/tab_state_qidian.png';// 起点 3
+import tingzhi from '../assets/images/leaflet_icon/tab_state_tingzhi.png'; // 停止点 2
+import zhongdian from '../assets/images/leaflet_icon/tab_state_zhongdian.png'; // 终点 4
+import lixian from '../assets/images/leaflet_icon/tab_state_lixian.png'; // 离线 5
+import sos from '../assets/images/leaflet_icon/tab_state_sos.png'; // SOS 6
+import duandian from '../assets/images/leaflet_icon/tab_state_duandian.png'; // 断电 7
+import chaixie from '../assets/images/leaflet_icon/tab_state_chaixie.png'; // 拆卸 8
+import jinru from '../assets/images/leaflet_icon/tab_state_jinru.png'; // 进入围栏 9
+import likai from '../assets/images/leaflet_icon/tab_state_likai.png'; // 离开围栏 10
+import sudu from '../assets/images/leaflet_icon/tab_state_sudu.png'; // 超速 11
+import didianliang from '../assets/images/leaflet_icon/tab_state_didianliang.png'; // 低电量 12
+import shangsheng from '../assets/images/leaflet_icon/tab_state_shangsheng.png'; // 高度上升 13
+import xiajiang from '../assets/images/leaflet_icon/tab_state_xiajiang.png'; // 高度下降 14
+import haiba from '../assets/images/leaflet_icon/tab_state_haiba.png' // 海拔 15
+
 /**
  * leaflet地图绘制类
  * 完成项目中基本绘制的工作
@@ -60,7 +77,7 @@ export const HlLeaflet = {
     weight: 1,
     useImg: true,
     color: '#03ff09',
-    imgUrl: require("../assets/images/leaflet_icon/trackplay-icon.png"),
+    imgUrl: trackPng,
     iconSize: [30, 30],
     iconAnchor: [20, 25],
     width: 40,
@@ -109,7 +126,7 @@ export const HlLeaflet = {
     color: 'red'
   },
   pointOptions: {
-    iconUrl: require("../assets/images/leaflet_icon/marker-icon.png"),
+    iconUrl: pointImg,
     iconSize: [25, 41],
     spiderfyOnMaxZoom: false,
     showCoverageOnHover: false,
@@ -127,20 +144,20 @@ export const HlLeaflet = {
     weight: 2
   },
   trackPointImg: [
-    require('../assets/images/leaflet_icon/tab_state_qidian.png'),// 起点 3
-    require('../assets/images/leaflet_icon/tab_state_tingzhi.png'), // 停止点 2
-    require('../assets/images/leaflet_icon/tab_state_zhongdian.png'), // 终点 4
-    require('../assets/images/leaflet_icon/tab_state_lixian.png'), // 离线 5
-    require('../assets/images/leaflet_icon/tab_state_sos.png'), // SOS 6
-    require('../assets/images/leaflet_icon/tab_state_duandian.png'), // 断电 7
-    require('../assets/images/leaflet_icon/tab_state_chaixie.png'), // 拆卸 8
-    require('../assets/images/leaflet_icon/tab_state_jinru.png'), // 进入围栏 9
-    require('../assets/images/leaflet_icon/tab_state_likai.png'), // 离开围栏 10
-    require('../assets/images/leaflet_icon/tab_state_sudu.png'), // 超速 11
-    require('../assets/images/leaflet_icon/tab_state_didianliang.png'), // 低电量 12
-    require('../assets/images/leaflet_icon/tab_state_shangsheng.png'), // 高度上升 13
-    require('../assets/images/leaflet_icon/tab_state_xiajiang.png'), // 高度下降 14
-    require('../assets/images/leaflet_icon/tab_state_haiba.png') // 海拔 15
+    qidian,// 起点 3
+    tingzhi, // 停止点 2
+    zhongdian, // 终点 4
+    lixian, // 离线 5
+    sos, // SOS 6
+    duandian, // 断电 7
+    chaixie, // 拆卸 8
+    jinru, // 进入围栏 9
+    likai, // 离开围栏 10
+    sudu, // 超速 11
+    didianliang, // 低电量 12
+    shangsheng, // 高度上升 13
+    xiajiang, // 高度下降 14
+    haiba // 海拔 15
   ],
   //轨迹回放配置
   _conf () {
@@ -203,7 +220,7 @@ export const HlLeaflet = {
       ...obj
     })
     reMap._controlCorners.topright.style.position = 'absolute'
-    reMap._controlCorners.topright.style.left = '120%' //隐藏调整控件
+    reMap._controlCorners.topright.style.left = '160%' //隐藏调整控件
     this.mapControl.zomm = L.control.zoom()
     this.mapControl.zomm.addTo(reMap).setPosition('topright')
     this.mapControl.fullscreen = L.control.fullscreen();
@@ -525,7 +542,7 @@ export const HlLeaflet = {
     map.addControl(measureRules);
     document.querySelector(".js-start").click();
   },
-  _drawInMap (map, type, iconSize = [20, 20], iconUrl = require('../assets/images/leaflet_icon/position-icon.png')) { //绘制在地图上
+  _drawInMap (map, type, iconSize = [20, 20], iconUrl = import('../assets/images/leaflet_icon/position-icon.png')) { //绘制在地图上
     if (!map) return;
     switch (type) {
       case 'marker':
@@ -539,7 +556,7 @@ export const HlLeaflet = {
       case '':
     }
   },
-  _editMarkerGetData (map, iconUrl = require("../assets/images/leaflet_icon/position-icon.png"), iconSize = [20, 20], layersName = 'editingMarker') {
+  _editMarkerGetData (map, iconUrl = import("../assets/images/leaflet_icon/position-icon.png"), iconSize = [20, 20], layersName = 'editingMarker') {
     if (!map) return;
     this._clearAllEdit(map);
     // map.off('mousemove', this._onmousemoveEvt, this);
@@ -892,11 +909,7 @@ export const HlLeaflet = {
       let img = new Image()
       img.onload = pass()
       img.onerrof = fall()
-      if (url.includes('http')) {
-        img.src = url;
-      } else {
-        img.src = require(`${url}`) // 解决依赖代码不支持变量，需要转模板模式
-      }
+      img.src = url
     })
   }
 }
