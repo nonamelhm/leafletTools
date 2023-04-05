@@ -5,12 +5,14 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width initial-scale=1.0">
   <title>HL demo</title>
-  <script src="https://cdn.jsdelivr.net/npm/leaflettools@1.0.7/lib/HL.umd.js"></script>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflettools@1.0.7/lib/HL.css">
+  <script src="https://cdn.jsdelivr.net/npm/leaflettools/lib/HL.umd.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflettools/lib/HL.css">
   <style>
     ul {
       display: flex;
       flex-wrap: wrap;
+      margin: 0;
+      padding: 5px 15px;
     }
 
     li {
@@ -25,19 +27,36 @@
 
     .title {
       text-align: center;
+      position: absolute;
+      top: 0px;
+      z-index: 1000;
+      left: 30%;
+    }
+
+    .tools {
+      position: fixed;
+      right: 10px;
+      top: 48px;
+      z-index: 1000;
+      width: 185px;
+      line-height: 50px;
+      background-color: #fff;
+      border-radius: 10px;
+      padding-left: 30px;
     }
 
     .funcBox {
-      width: 320px;
-      height: 580px;
+      width: 213px;
+      height: 510px;
       overflow-y: scroll;
       position: fixed;
-      right: 0px;
+      right: 10px;
+      top: 105px;
       z-index: 1000;
       background-color: #fff;
       color: #646566;
       text-align: left;
-      margin: 10px;
+      border-radius: 10px;
     }
   </style>
 </head>
@@ -45,40 +64,41 @@
 <body>
   <h1 class="title">leafletools——项目中leaflet基本绘图操作</h1>
   <div>
+    <div class="tools">地图工具</div>
     <div class="funcBox">
       <ul>
-        <li onclick="point()">(1)数据绘点(聚合点)/清除绘点</li>
-        <li onclick="polyline()"> (2)数据绘线/清除绘线</li>
-        <li onclick="polygon()">(3)数据绘多边形/清除多边形</li>
-        <li onclick="rectangle()">(4)数据绘矩形/清除矩形</li>
-        <li onclick="circle()">(5)数据绘圆形/清除圆形</li>
-        <li onclick="angleCircle()">(6)绘制角度画圆（台风风圈）/清除角度画圆（台风风圈）</li>
-        <li onclick="mearsure()"> (7)测量距离/清除测量</li>
-        <li onclick="changeMearsureUnit()">(8)切换测量距离单位</li>
-        <li onclick="area()">(9)测量面积</li>
-        <li onclick="hotMap()"> (10)绘制热力图/清除热力图</li>
-        <li onclick="clearEdit()">(11)清除正在绘制</li>
-        <li onclick="edit(0)"> (12)直接绘制多边形/清除绘制多边形</li>
-        <li onclick="edit(1)"> (13)直接绘制圆形/清除绘制圆形</li>
-        <li onclick="edit(2)"> (14)直接绘制矩形/清除绘制矩形</li>
-        <li onclick="editMarkerGetData()">(15)直接绘点/清除绘点</li>
-        <li onclick="trackBack()">(16)轨迹回放/清除轨迹</li>
-        <li onclick="quitTrack()">(17)暂停轨迹回放/开启轨迹回放</li>
-        <li onclick="showHideTrack()">(18)运动时轨迹画线/取消运动时轨迹画线</li>
-        <li onclick="setTrackSpeed(10)">(19)设置轨迹回放速度为10</li>
-        <li onclick="restartTrack()">(20)刷新轨迹回放</li>
-        <li onclick="changeLayers(1)">(21)切换天地图卫星图</li>
-        <li onclick="changeLayers(2)">(22)切换天地图地形图</li>
-        <li onclick="changeLayers(3)">(23)切换天地图街道图</li>
-        <li onclick="changeLayers(4)">(24)切换谷歌卫星图</li>
-        <li onclick="changeLayers(5)">(25)切换谷歌地形图</li>
-        <li onclick="changeLayers(6)">(26)切换谷歌街道图</li>
-        <li onclick="fullScreen()">(27)全屏</li>
-        <li onclick="actMapZoomIO(1)">(28)放大</li>
-        <li onclick="actMapZoomIO(-1)">(29)缩小</li>
+        <li onclick="point()">数据绘点(聚合点)/清除</li>
+        <li onclick="polyline()"> 数据绘线/清除</li>
+        <li onclick="polygon()">数据绘多边形/清除</li>
+        <li onclick="rectangle()">数据绘矩形/清除</li>
+        <li onclick="circle()">数据绘圆形/清除</li>
+        <li onclick="angleCircle()">绘制台风/清除</li>
+        <li onclick="mearsure()"> 测量距离/清除</li>
+        <li onclick="changeMearsureUnit()">切换测距单位</li>
+        <li onclick="area()">测面积</li>
+        <li onclick="hotMap()"> 绘制热力图/清除</li>
+        <li onclick="clearEdit()">清除正在绘制</li>
+        <li onclick="edit(0)"> 直接绘制多边形/清除</li>
+        <li onclick="edit(1)"> 直接绘制圆形/清除</li>
+        <li onclick="edit(2)"> 直接绘制矩形/清除</li>
+        <li onclick="editMarkerGetData()">直接绘点/清除</li>
+        <li onclick="trackBack()">轨迹回放/清除</li>
+        <li onclick="quitTrack()">轨迹回放开启/暂停</li>
+        <li onclick="showHideTrack()">运动时轨迹画线/取消画线</li>
+        <li onclick="setTrackSpeed(10)">设置轨迹回放速度为10</li>
+        <li onclick="restartTrack()">刷新轨迹回放</li>
+        <li onclick="changeLayers(1)">切换天地图卫星图</li>
+        <li onclick="changeLayers(2)">切换天地图地形图</li>
+        <li onclick="changeLayers(3)">切换天地图街道图</li>
+        <li onclick="changeLayers(4)">切换谷歌卫星图</li>
+        <li onclick="changeLayers(5)">切换谷歌地形图</li>
+        <li onclick="changeLayers(6)">切换谷歌街道图</li>
+        <li onclick="fullScreen()">全屏</li>
+        <li onclick="actMapZoomIO(1)">放大</li>
+        <li onclick="actMapZoomIO(-1)">缩小</li>
       </ul>
     </div>
-    <div id="map" style="width:1400px;height:600px;margin:auto;"></div>
+    <div id="map" style="width:1500px;height:1000px;margin:auto;overflow:hidden;"></div>
   </div>
 
   <script>
@@ -120,7 +140,7 @@
     let isPolygon = false;
     function polygon () {
       isPolygon = !isPolygon
-      let list = [[{ lat: 24, lng: 110, showMsg: 'hello' }, { lat: 12, lng: 110 }, { lat: 32, lng: 112 }, { lat: 22, lng: 114 }][{ lat: 12, lng: 109, showMsg: 'hi' }, { lat: 22, lng: 130 }, { lat: 22, lng: 102 }, { lat: 22, lng: 108 }]]
+      let list = [[{ lat: 24, lng: 110, showMsg: 'hello' }, { lat: 22, lng: 110 }, { lat: 32, lng: 112 }, { lat: 25, lng: 14 }], [{ lat: 19, lng: 10, showMsg: 'hi' }, { lat: 12, lng: 80 }, { lat: 2, lng: 22 }, { lat: 5, lng: 14 }]]
       if (isPolygon) {
         hl._drawByData(map, list, `polygon`, 'polygon', { color: 'green', weight: 1 });
       } else {
@@ -131,14 +151,13 @@
     let isRectangle = false;
     function rectangle () {
       isRectangle = !isRectangle
-      let list = [[{ lat: 24, lng: 110, showMsg: 'hello-rectangle' }, { lat: 24, lng: 121 }, { lat: 30, lng: 121, id: 3 }, { lat: 30, lng: 110, id: 4 }][{ lat: 14, lng: 90, id: 5, showMsg: 'hi-rectangle' }, { lat: 14, lng: 100, id: 6 }, { lat: 20, lng: 90, id: 7 }, { lat: 20, lng: 100, id: 8 }]]
+      let list = [[{ lat: 24, lng: 110, showMsg: 'hello-rectangle' }, { lat: 24, lng: 121 }, { lat: 30, lng: 121, id: 3 }, { lat: 30, lng: 110, id: 4 }], [{ lat: 14, lng: 90, id: 5, showMsg: 'hi-rectangle' }, { lat: 14, lng: 100, id: 6 }, { lat: 20, lng: 90, id: 7 }, { lat: 20, lng: 100, id: 8 }]]
       let list2 = [{ lat: 26, lng: 130, showMsg: 'hello222-rectangle' }, { lat: 26, lng: 121 }, { lat: 30, lng: 130 }, { lat: 30, lng: 121 }];
       if (isRectangle) {
         hl._drawByData(map, list, `rectangle`, 'rectangle', { color: 'blue', weight: 1 })
         hl._drawByData(map, list2, `rectangle`, 'rectangle', { color: 'red', weight: 1 })
-
       } else {
-        hl._clearLayer(map`rectangle`)
+        hl._clearLayer(map, `rectangle`)
       }
     }
     // (5)数据绘圆形
@@ -189,6 +208,7 @@
       })
     }
     //(10)绘制热力图
+    let isHot = false
     function hotMap () {
       let data = [{
         lat: 35.460756,
